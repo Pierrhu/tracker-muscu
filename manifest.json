@@ -1,6 +1,6 @@
 {
   "name": "Tracker Muscu",
-  "short_name": "Muscu",
+  "short_name": "TraX",
   "description": "Suivi d'entraînement musculation",
   "start_url": "./index.html",
   "display": "standalone",
