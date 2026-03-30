@@ -360,6 +360,61 @@
   /* TOAST PR variant */
   .toast.pr { background: #FFD700; color: #000; }
 
+  /* EXERCISE INFO MODAL */
+  .info-btn {
+    width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--border);
+    background: var(--card2); color: var(--text3); font-size: 13px; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-family: inherit; transition: 0.15s; flex-shrink: 0;
+  }
+  .info-btn:hover, .info-btn:active { border-color: var(--blue); color: var(--blue); background: rgba(45,125,210,0.1); }
+
+  .info-modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 250;
+    display: flex; align-items: flex-end; justify-content: center;
+    animation: fadeIn 0.15s ease;
+  }
+  .info-modal-overlay.hidden { display: none; }
+  .info-modal-box {
+    background: var(--card); border-radius: 20px 20px 0 0; padding: 20px 16px 32px;
+    width: 100%; max-width: 480px; border-top: 1px solid var(--border);
+    animation: slideUp 0.25s cubic-bezier(.34,1.56,.64,1);
+    max-height: 90vh; overflow-y: auto;
+  }
+  .info-modal-header {
+    display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px;
+  }
+  .info-modal-title { font-size: 16px; font-weight: 800; color: #EDEDF0; flex: 1; }
+  .info-modal-close {
+    width: 32px; height: 32px; border-radius: 50%; border: none; background: var(--card2);
+    color: var(--text3); font-size: 18px; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0; margin-left: 12px;
+  }
+  .info-gif-container {
+    width: 100%; border-radius: 12px; overflow: hidden; background: #000;
+    margin-bottom: 14px; position: relative; min-height: 120px;
+  }
+  .info-gif-container img {
+    width: 100%; height: auto; display: block;
+  }
+  .info-gif-container .gif-placeholder {
+    padding: 32px; text-align: center; color: var(--text3); font-size: 12px;
+  }
+  .info-section { margin-bottom: 14px; }
+  .info-section-title {
+    font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+  }
+  .info-section-title .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .info-point {
+    font-size: 13px; color: var(--text2); line-height: 1.6; padding: 4px 0 4px 14px;
+    border-left: 2px solid var(--border); margin-bottom: 6px;
+  }
+  .info-why {
+    font-size: 13px; color: var(--text2); line-height: 1.6; padding: 12px 14px;
+    background: var(--card2); border-radius: 10px; border-left: 3px solid var(--blue);
+  }
+
   /* Weight input modal */
   .weight-banner {
     background: linear-gradient(135deg, var(--yellow), #D4940F);
@@ -393,6 +448,11 @@
 
 <!-- IMPORT MODAL -->
 <div class="modal-overlay hidden" id="import-modal">
+
+<!-- EXERCISE INFO MODAL -->
+<div class="info-modal-overlay hidden" id="info-modal" onclick="if(event.target===this)closeInfoModal()">
+  <div class="info-modal-box" id="info-modal-box"></div>
+</div>
   <div class="modal-box">
     <div class="modal-title">📥 Charger un fichier Excel</div>
     <div class="import-drop-zone" id="import-drop-zone" onclick="document.getElementById('import-file-input').click()">
@@ -423,33 +483,216 @@ const PROGRAM = [
   {
     id:'A', name:'Jour A', subtitle:'Force Horizontale', accent:'#C23B3B', when:'Lundi',
     exercises: [
-      {id:'a1',name:'Développé couché barre',format:'Top set 3-5 + 3×6-8',sets:4,topSet:true,rankKey:'bench'},
-      {id:'a2',name:'Rowing barre pronation',format:'Top set 3-5 + 3×6-8',sets:4,topSet:true,rankKey:'row'},
-      {id:'a3',name:'Développé incliné DB 30°',format:'3×8-10',sets:3},
-      {id:'a4',name:'Tirage vertical neutre',format:'3×10-12',sets:3},
-      {id:'a5',name:'Élévations latérales',format:'3×12-15',sets:3},
-      {id:'a6',name:'SS: Curl EZ / Ext. corde',format:'2×8-10 / 10-12',sets:2,superset:true},
+      {id:'a1',name:'Développé couché barre',format:'Top set 3-5 + 3×6-8',sets:4,topSet:true,rankKey:'bench',
+        info:{
+          gif:'gifs/developpe-couche-barre.gif',
+          execution:[
+            'Pieds au sol, fessiers et haut du dos en contact avec le banc, léger arc thoracique naturel.',
+            'Prise légèrement plus large que les épaules, poignets droits alignés avec les avant-bras.',
+            'Descente contrôlée (2-3s) jusqu\'au bas des pecs, coudes à ~45° du corps.',
+            'Poussée explosive en serrant les pecs, verrouiller en haut sans hyper-extension des coudes.',
+            'Inspirer à la descente, expirer à la poussée. Garder les omoplates serrées tout du long.'
+          ],
+          interet:'Mouvement roi du développement des pectoraux. Placé en top set (3-5 reps) en ouverture de séance pour maximiser la surcharge progressive quand le système nerveux est frais. C\'est ton marqueur de force principal sur le push horizontal.'
+        }},
+      {id:'a2',name:'Rowing barre pronation',format:'Top set 3-5 + 3×6-8',sets:4,topSet:true,rankKey:'row',
+        info:{
+          gif:'gifs/rowing-barre-pronation.gif',
+          execution:[
+            'Pieds largeur de hanches, genoux légèrement fléchis, buste penché à ~45° (pas plus bas).',
+            'Prise pronation (paumes vers le bas) légèrement plus large que les épaules.',
+            'Tirer la barre vers le nombril en serrant les omoplates, coudes le long du corps.',
+            'Descente contrôlée, bras quasi-tendus en bas. Pas d\'élan avec le buste.',
+            'Gainage abdominal constant pour protéger le bas du dos.'
+          ],
+          interet:'Mouvement composé lourd pour le dos en épaisseur. En top set juste après le bench pour alterner push/pull et optimiser le ratio force du dos vs pecs. La prise pronation cible davantage les rhomboïdes et trapèzes moyens.'
+        }},
+      {id:'a3',name:'Développé incliné DB 30°',format:'3×8-10',sets:3,
+        info:{
+          gif:'gifs/developpe-incline-db.gif',
+          execution:[
+            'Banc incliné à 30° (pas plus, sinon les deltoïdes antérieurs prennent le dessus).',
+            'Haltères au niveau des épaules, paumes vers l\'avant, coudes à ~45°.',
+            'Pousser en arc de cercle, les haltères se rapprochent en haut sans se toucher.',
+            'Descente lente avec un étirement profond en bas — c\'est là que le muscle travaille le plus.',
+            'Garder les omoplates rétractées et le dos collé au banc.'
+          ],
+          interet:'Cible la portion claviculaire (haut des pecs) qui est souvent en retard. Placé après le couché pour profiter de la pré-fatigue de la portion sternale — l\'incliné n\'a pas besoin d\'être lourd pour être efficace ici.'
+        }},
+      {id:'a4',name:'Tirage vertical neutre',format:'3×10-12',sets:3,
+        info:{
+          gif:'gifs/tirage-vertical-neutre.gif',
+          execution:[
+            'Prise neutre (paumes face à face), largeur d\'épaules ou légèrement plus serrée.',
+            'Tirer les coudes vers le bas et l\'arrière, amener la barre au niveau du haut de la poitrine.',
+            'Squeeze 1-2 secondes en bas du mouvement en contractant les dorsaux.',
+            'Remonter lentement en contrôlant, bras quasi-tendus en haut (sans relâcher les épaules).',
+            'Ne pas tirer avec les bras — penser "coudes vers les hanches".'
+          ],
+          interet:'Complète le rowing barre avec un tirage vertical pour varier le plan de mouvement. La prise neutre sollicite davantage le grand dorsal et réduit le stress sur les épaules. Évite aussi de surcharger le bas du dos déjà fatigué par le rowing.'
+        }},
+      {id:'a5',name:'Élévations latérales',format:'3×12-15',sets:3,
+        info:{
+          gif:'gifs/elevations-laterales-halteres.gif',
+          execution:[
+            'Debout, légère inclinaison du buste vers l\'avant (~10-15°).',
+            'Bras légèrement fléchis, monter les haltères sur les côtés jusqu\'à l\'horizontale.',
+            'Initier le mouvement avec les coudes, pas les mains — imaginer verser une bouteille d\'eau.',
+            'Descente lente et contrôlée (2s), ne pas laisser tomber.',
+            'Poids léger à modéré — la technique prime sur la charge sur cet exercice.'
+          ],
+          interet:'Isolation pure du deltoïde latéral (médial), qui ne reçoit quasiment aucun travail indirect des composés. C\'est l\'exercice qui donne la largeur d\'épaules. En 12-15 reps car ce muscle répond mieux au volume.'
+        }},
+      {id:'a6',name:'SS: Curl EZ / Ext. corde',format:'2×8-10 / 10-12',sets:2,superset:true,
+        info:{
+          gif:'gifs/curl-ez.gif',
+          execution:[
+            'Curl EZ : prise sur les parties inclinées de la barre (réduit le stress sur les poignets). Coudes fixes le long du corps, pas d\'élan.',
+            'Extension corde : coudes fixes, écarter la corde en bas du mouvement et squeeze 1s. Ne pas utiliser l\'élan.',
+            'Alterner les deux sans repos entre eux, repos 1:30 après le round complet.',
+            'Mouvement strict et contrôlé sur les deux — les bras sont déjà pré-fatigués par les composés.'
+          ],
+          interet:'Superset antagoniste biceps/triceps — la seule combinaison en superset justifiée scientifiquement. L\'inhibition réciproque permet de garder quasi 100% de ta force sur chaque mouvement tout en divisant le temps par deux. Placé en fin de séance quand la fatigue n\'a plus d\'impact sur les composés.'
+        }},
     ]
   },
   {
     id:'B', name:'Jour B', subtitle:'Force Verticale', accent:'#2D7DD2', when:'Mercredi',
     exercises: [
-      {id:'b1',name:'DM haltères assis',format:'Top set 3-5 + 3×6-8',sets:4,topSet:true,rankKey:'ohp'},
-      {id:'b2',name:'Tirage vertical large',format:'4×6-8 lourd',sets:4},
-      {id:'b3',name:'Rowing DB unilatéral',format:'3×10-12/bras',sets:3},
-      {id:'b4',name:'Latérales poulie basse',format:'4×12-15',sets:4},
-      {id:'b5',name:'Face pull corde',format:'3×15-20',sets:3},
+      {id:'b1',name:'DM haltères assis',format:'Top set 3-5 + 3×6-8',sets:4,topSet:true,rankKey:'ohp',
+        info:{
+          gif:'gifs/developpe-militaire-halteres.gif',
+          execution:[
+            'Assis sur un banc avec dossier incliné à ~80-85° (léger soutien du dos).',
+            'Haltères au niveau des oreilles, paumes vers l\'avant, coudes sous les poignets.',
+            'Pousser vers le haut en arc de cercle, haltères se rapprochent en haut.',
+            'Descente contrôlée jusqu\'à ce que les coudes soient à ~90° ou légèrement en dessous.',
+            'Ne pas cambrer le dos — abdos gainés, pieds bien au sol.'
+          ],
+          interet:'Mouvement de force principal pour les épaules. Les haltères permettent une ROM plus grande que la barre et corrigent les déséquilibres gauche/droite. En top set pour construire la force du deltoïde antérieur, base de tous les mouvements de push.'
+        }},
+      {id:'b2',name:'Tirage vertical large',format:'4×6-8 lourd',sets:4,
+        info:{
+          gif:'gifs/tirage-vertical-large.gif',
+          execution:[
+            'Prise pronation large (1.5× largeur d\'épaules), cuisses calées sous les boudins.',
+            'Tirer la barre vers le haut de la poitrine en bombant légèrement le torse.',
+            'Coudes tirés vers le bas et légèrement vers l\'arrière.',
+            'Contrôler la remontée — ne pas laisser le poids tirer les épaules vers le haut.',
+            'Garder une légère extension thoracique tout du long.'
+          ],
+          interet:'Travaillé en lourd (6-8 reps) — c\'est ton chemin vers les tractions. Le jour où tu tireras proprement ton poids de corps ici pour 6+ reps, tu feras ta première traction. La prise large cible la largeur du dos (grand dorsal).'
+        }},
+      {id:'b3',name:'Rowing DB unilatéral',format:'3×10-12/bras',sets:3,
+        info:{
+          gif:'gifs/rowing-db-unilateral.gif',
+          execution:[
+            'Un genou et une main sur le banc, pied opposé au sol, dos plat et parallèle.',
+            'Tirer l\'haltère vers la hanche (pas vers l\'épaule), coude rasant le corps.',
+            'Étirement maximal en bas — laisser l\'épaule descendre légèrement.',
+            'Squeeze 1s en haut en serrant l\'omoplate. Chaque bras séparément.',
+            'Ne pas tourner le buste — le tronc reste fixe, seul le bras bouge.'
+          ],
+          interet:'Corrige les asymétries gauche/droite du dos que les mouvements bilatéraux peuvent masquer. L\'unilatéralité permet aussi une ROM plus grande et un meilleur étirement du grand dorsal. Complémentaire du tirage vertical en variant le plan.'
+        }},
+      {id:'b4',name:'Latérales poulie basse',format:'4×12-15',sets:4,
+        info:{
+          gif:'gifs/elevations-laterales-poulie.gif',
+          execution:[
+            'Debout à côté de la poulie basse, bras intérieur tient la poignée, bras extérieur en appui.',
+            'Monter le bras latéralement jusqu\'à l\'horizontale, coude légèrement fléchi.',
+            'La poulie crée une tension constante, même en bas du mouvement (contrairement aux haltères).',
+            'Descente lente (2-3s), ne pas laisser le câble tirer brusquement.',
+            'Se pencher légèrement du côté opposé pour augmenter l\'amplitude.'
+          ],
+          interet:'Angle différent des latérales haltères du Jour A — la poulie basse maintient une tension constante et maximise le stimulus en position d\'étirement, ce que les haltères ne font pas. 4 séries car les deltoïdes sont un point faible identifié.'
+        }},
+      {id:'b5',name:'Face pull corde',format:'3×15-20',sets:3,
+        info:{
+          gif:'gifs/face-pull.gif',
+          execution:[
+            'Poulie réglée à hauteur du visage ou légèrement au-dessus.',
+            'Prise en pronation sur la corde, tirer vers le front en écartant les mains.',
+            'Coudes hauts et en arrière — finir avec les mains de chaque côté des oreilles.',
+            'Squeeze 2s en fin de mouvement en serrant les omoplates.',
+            'Poids léger, 15-20 reps — c\'est un mouvement de santé articulaire, pas de force.'
+          ],
+          interet:'Non négociable pour la santé des épaules, surtout pour un cycliste qui passe des heures penché vers l\'avant. Renforce les rotateurs externes et le deltoïde postérieur, contrebalançant tout le volume de pressing. Prévention blessure + esthétique (faisceau postérieur souvent négligé).'
+        }},
     ]
   },
   {
     id:'C', name:'Jour C', subtitle:'Volume & Rattrapage', accent:'#1A9E8F', when:'Vendredi',
     exercises: [
-      {id:'c1',name:'Développé couché DB',format:'4×10-12',sets:4},
-      {id:'c2',name:'Tirage horizontal serré',format:'4×10-12',sets:4},
-      {id:'c3',name:'Écarté poulie vis-à-vis',format:'3×12-15',sets:3},
-      {id:'c4',name:'Latérales drop set méca.',format:'3×(8+8+8)',sets:3,dropSet:true},
-      {id:'c5',name:'Face pull corde',format:'2×15-20',sets:2},
-      {id:'c6',name:'SS: Curl marteau / Ext.',format:'2×10-12 / 10-12',sets:2,superset:true},
+      {id:'c1',name:'Développé couché DB',format:'4×10-12',sets:4,
+        info:{
+          gif:'gifs/developpe-couche-db.gif',
+          execution:[
+            'Allongé sur banc plat, haltères au niveau de la poitrine, pieds au sol.',
+            'Descente lente avec un étirement profond — les haltères descendent plus bas qu\'une barre.',
+            'Pousser en arc de cercle, les haltères se rapprochent en haut.',
+            'ROM complète — c\'est l\'avantage principal vs la barre : plus d\'amplitude = plus d\'hypertrophie.',
+            'Garder les omoplates rétractées et serrées, épaules basses.'
+          ],
+          interet:'Stimulus différent de la barre du Jour A — la ROM plus grande et la stabilisation requise recrutent plus de fibres. En 10-12 reps jour de volume, charges modérées. Pas de top set car c\'est la veille de la sortie longue vélo.'
+        }},
+      {id:'c2',name:'Tirage horizontal serré',format:'4×10-12',sets:4,
+        info:{
+          gif:'gifs/tirage-horizontal-serre.gif',
+          execution:[
+            'Assis face à la poulie, pieds calés, genoux légèrement fléchis, dos droit.',
+            'Prise serrée (V-bar ou triangle), tirer vers le bas du sternum.',
+            'Serrer les omoplates 1-2s à la contraction, poitrine bombée.',
+            'Phase excentrique contrôlée (2-3s), laisser les bras s\'étendre complètement.',
+            'Ne pas se balancer — le buste reste quasi-fixe, seuls les bras bougent.'
+          ],
+          interet:'Complète les tirages verticaux des Jours A et B avec un tirage horizontal. La prise serrée cible davantage le milieu du dos (rhomboïdes, trapèzes moyens) et l\'épaisseur du dos. En volume (10-12 reps) pour accumuler du travail sans fatiguer le SNC.'
+        }},
+      {id:'c3',name:'Écarté poulie vis-à-vis',format:'3×12-15',sets:3,
+        info:{
+          gif:'gifs/ecarte-poulie.gif',
+          execution:[
+            'Poulies réglées à hauteur d\'épaules, un pied en avant pour la stabilité.',
+            'Bras ouverts, coudes légèrement fléchis (fixés dans cette position tout le mouvement).',
+            'Amener les mains l\'une vers l\'autre devant la poitrine en contractant les pecs.',
+            'Squeeze 2s à la contraction. Retour lent en étirant bien.',
+            'Ne pas changer l\'angle des coudes — ce n\'est pas un press, c\'est un écarté.'
+          ],
+          interet:'Isolation pure des pectoraux avec tension constante (avantage de la poulie vs haltères). En fin de séance pecs pour finir le muscle avec du volume métabolique. Complète les développés qui sont des composés multi-articulaires.'
+        }},
+      {id:'c4',name:'Latérales drop set méca.',format:'3×(8+8+8)',sets:3,dropSet:true,
+        info:{
+          gif:'gifs/elevations-laterales-halteres.gif',
+          execution:[
+            'Phase 1 — Penché (~45°) : 8 reps d\'élévations en position penchée (cible le deltoïde postérieur/latéral en stretch).',
+            'Phase 2 — Debout : sans repos, se redresser et faire 8 reps classiques debout.',
+            'Phase 3 — Partiel haut : sans repos, 8 reps partielles (seulement la moitié haute du mouvement, de 45° à horizontal).',
+            'Même poids sur les 3 phases — le changement d\'angle rend le mouvement plus facile, ce qui permet de continuer sans baisser la charge.',
+            'Repos 1:30 entre les séries complètes.'
+          ],
+          interet:'Technique la plus efficace pour maximiser le volume de travail du deltoïde latéral en un minimum de temps. Les 3 angles exploitent la courbe de force : quand tu es épuisé en position penchée, tu passes à un angle plus facile. 24 reps effectives par série avec le même poids.'
+        }},
+      {id:'c5',name:'Face pull corde',format:'2×15-20',sets:2,
+        info:{
+          gif:'gifs/face-pull.gif',
+          execution:[
+            'Même exécution que le Jour B — poulie haute, tirer vers le front, coudes hauts.',
+            'Squeeze 2s, poids léger, focus sur la contraction.',
+            '2 séries suffisent ici car déjà 3 séries faites le Jour B.'
+          ],
+          interet:'Maintien de la santé articulaire des épaules. Présent 2 fois dans la semaine (Jours B et C) pour un total de 5 séries hebdomadaires — suffisant pour la prévention sans gaspiller du temps.'
+        }},
+      {id:'c6',name:'SS: Curl marteau / Ext.',format:'2×10-12 / 10-12',sets:2,superset:true,
+        info:{
+          gif:'gifs/curl-marteau.gif',
+          execution:[
+            'Curl marteau : prise neutre (paumes face à face), bras le long du corps, monter en gardant les coudes fixes.',
+            'Extension poulie barre droite : coudes collés au corps, extension complète, squeeze 1s en bas.',
+            'Alterner sans repos entre les deux, 1:30 de repos après le round complet.',
+            'Mouvement strict — pas d\'élan, pas de triche.'
+          ],
+          interet:'Curl marteau cible le brachio-radial et le long chef du biceps — donne l\'épaisseur du bras vue de face. Superset antagoniste avec les extensions pour les mêmes raisons que le Jour A. Variante différente (marteau vs EZ) pour diversifier le stimulus.'
+        }},
     ]
   }
 ];
@@ -843,9 +1086,12 @@ function renderWorkout() {
           <div class="ex-name">${ex.name}</div>
           <div class="ex-format">${ex.format}</div>
         </div>
-        <div>
-          ${lastPerf ? `<div class="ex-prev">Préc: <strong style="color:${day.accent}">${lastPerf.kg}kg×${lastPerf.reps}</strong></div>` : ''}
-          <div class="ex-arrow" style="text-align:right">${isOpen?'▾':'▸'}</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${ex.info ? `<button class="info-btn" onclick="event.stopPropagation();openInfoModal('${ex.id}')">i</button>` : ''}
+          <div>
+            ${lastPerf ? `<div class="ex-prev">Préc: <strong style="color:${day.accent}">${lastPerf.kg}kg×${lastPerf.reps}</strong></div>` : ''}
+            <div class="ex-arrow" style="text-align:right">${isOpen?'▾':'▸'}</div>
+          </div>
         </div>
       </div>`;
 
@@ -1343,6 +1589,66 @@ function exportToExcel() {
   const filename = `tracker-muscu-${new Date().toISOString().slice(0,10)}.xlsx`;
   XLSX.writeFile(wb, filename);
   showToast('Export Excel téléchargé 📊');
+}
+
+
+// ---- EXERCISE INFO MODAL ----
+function findExercise(exId) {
+  for (const day of PROGRAM) {
+    for (const ex of day.exercises) {
+      if (ex.id === exId) return { ex, day };
+    }
+  }
+  return null;
+}
+
+function openInfoModal(exId) {
+  const found = findExercise(exId);
+  if (!found || !found.ex.info) return;
+  const { ex, day } = found;
+  const info = ex.info;
+
+  let gifHtml = '';
+  if (info.gif) {
+    gifHtml = `<div class="info-gif-container">
+      <img src="${info.gif}" alt="${ex.name}" onerror="this.parentElement.innerHTML='<div class=\\'gif-placeholder\\'>GIF non trouvé<br><small>${info.gif}</small></div>'">
+    </div>`;
+  }
+
+  let execHtml = '';
+  if (info.execution && info.execution.length) {
+    execHtml = `<div class="info-section">
+      <div class="info-section-title" style="color:${day.accent}"><span class="dot" style="background:${day.accent}"></span>Exécution</div>
+      ${info.execution.map(p => `<div class="info-point">${p}</div>`).join('')}
+    </div>`;
+  }
+
+  let whyHtml = '';
+  if (info.interet) {
+    whyHtml = `<div class="info-section">
+      <div class="info-section-title" style="color:var(--blue)"><span class="dot" style="background:var(--blue)"></span>Pourquoi cet exercice</div>
+      <div class="info-why">${info.interet}</div>
+    </div>`;
+  }
+
+  document.getElementById('info-modal-box').innerHTML = `
+    <div class="info-modal-header">
+      <div class="info-modal-title">${ex.name}</div>
+      <button class="info-modal-close" onclick="closeInfoModal()">✕</button>
+    </div>
+    <div style="margin-bottom:10px">
+      <span class="tag" style="background:${day.accent}20;color:${day.accent}">${day.name}</span>
+      <span style="font-size:12px;color:var(--text3);margin-left:6px">${ex.format}</span>
+    </div>
+    ${gifHtml}
+    ${execHtml}
+    ${whyHtml}
+  `;
+  document.getElementById('info-modal').classList.remove('hidden');
+}
+
+function closeInfoModal() {
+  document.getElementById('info-modal').classList.add('hidden');
 }
 
 
