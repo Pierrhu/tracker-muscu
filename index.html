@@ -472,6 +472,18 @@
   /* HEATMAP */
   .heatmap { margin-bottom: 16px; }
   .heatmap-title { font-size: 15px; font-weight: 800; color: #EDEDF0; margin-bottom: 10px; }
+  .heatmap-nav {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
+  }
+  .heatmap-nav-btn {
+    width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--card2); color: var(--text3); font-size: 16px; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-family: inherit; transition: 0.15s;
+  }
+  .heatmap-nav-btn:active { background: var(--border); }
+  .heatmap-nav-btn:disabled { opacity: 0.3; cursor: default; }
+  .heatmap-nav-label { font-size: 13px; font-weight: 600; color: var(--text2); }
   .heatmap-months { display: flex; gap: 0; margin-bottom: 6px; padding-left: 28px; }
   .heatmap-month { font-size: 10px; color: var(--text3); }
   .heatmap-grid { display: flex; gap: 3px; }
@@ -1311,17 +1323,43 @@ function renderWorkout() {
         const isTop = ex.topSet && i === 0;
         const kgKey = `${ex.id}_${i}_kg`;
         const repsKey = `${ex.id}_${i}_reps`;
+
+        // Smart suggestion logic
+        let sugKg = prev ? prev.kg : '';
+        let sugReps = prev ? prev.reps : '';
+
+        if (ex.topSet && i > 0) {
+          // Back-off set: if top set is filled, suggest ~85%
+          const topKg = parseFloat(state.current[`${ex.id}_0_kg`]);
+          const topReps = parseInt(state.current[`${ex.id}_0_reps`]);
+          if (topKg > 0) {
+            sugKg = (Math.round((topKg * 0.85) / 2.5) * 2.5).toFixed(1).replace('.0','');
+          }
+          if (topReps > 0) {
+            sugReps = Math.min(topReps + 2, 8);
+          }
+          // Fall back to prev if nothing
+          if (!sugKg && prev) sugKg = prev.kg;
+          if (!sugReps && prev) sugReps = prev.reps;
+        } else if (!ex.topSet && i > 0) {
+          // Non-top-set: suggest same as previous set in this session
+          const prevSetKg = state.current[`${ex.id}_${i-1}_kg`];
+          const prevSetReps = state.current[`${ex.id}_${i-1}_reps`];
+          if (prevSetKg) sugKg = prevSetKg;
+          if (prevSetReps) sugReps = prevSetReps;
+        }
+
         html += `<div class="set-row">
           <div class="set-label${isTop?' top':''}">${isTop?'TOP':`Série ${i+1}`}</div>
           <div class="input-wrap">
-            <input type="number" inputmode="decimal" placeholder="${prev?prev.kg:'kg'}"
+            <input type="number" inputmode="decimal" placeholder="${sugKg||'kg'}"
               value="${state.current[kgKey]||''}"
               onclick="event.stopPropagation()"
               oninput="event.stopPropagation();updateSet('${kgKey}',this.value);onSetInput('${ex.id}',${i},'${kgKey}','${repsKey}',${ex.topSet||false},'${ex.rankKey||''}')">
             <span class="unit">kg</span>
           </div>
           <div class="input-wrap">
-            <input type="number" inputmode="numeric" placeholder="${prev?prev.reps:'reps'}"
+            <input type="number" inputmode="numeric" placeholder="${sugReps||'reps'}"
               value="${state.current[repsKey]||''}"
               onclick="event.stopPropagation()"
               oninput="event.stopPropagation();updateSet('${repsKey}',this.value);onSetInput('${ex.id}',${i},'${kgKey}','${repsKey}',${ex.topSet||false},'${ex.rankKey||''}')">
@@ -1427,7 +1465,6 @@ function onSetInput(exId, setIdx, kgKey, repsKey, isTopSet, rankKey) {
   const kg = state.current[kgKey];
   const reps = state.current[repsKey];
   if (kg && reps && parseFloat(kg) > 0 && parseInt(reps) > 0) {
-    // Start rest timer
     const duration = getRestDuration(exId);
     startRestTimer(duration, exId);
   }
@@ -1451,6 +1488,37 @@ function onSetInput(exId, setIdx, kgKey, repsKey, isTopSet, rankKey) {
         el.innerHTML = '';
       }
     }
+
+    // Update back-off set placeholders dynamically
+    const topKg = parseFloat(state.current[kgKey]) || 0;
+    const topReps = parseInt(state.current[repsKey]) || 0;
+    if (topKg > 0) {
+      const sugKg = (Math.round((topKg * 0.85) / 2.5) * 2.5).toFixed(1).replace('.0','');
+      const sugReps = topReps > 0 ? Math.min(topReps + 2, 8) : '';
+      // Find the exercise to know how many sets
+      for (const day of PROGRAM) {
+        for (const ex of day.exercises) {
+          if (ex.id === exId) {
+            for (let s = 1; s < ex.sets; s++) {
+              const kgInput = document.querySelector(`input[oninput*="'${exId}_${s}_kg'"]`);
+              const repsInput = document.querySelector(`input[oninput*="'${exId}_${s}_reps'"]`);
+              if (kgInput && !kgInput.value) kgInput.placeholder = sugKg;
+              if (repsInput && !repsInput.value && sugReps) repsInput.placeholder = sugReps;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // For non-top-set exercises: update next set placeholders
+  if (!isTopSet && kg) {
+    const nextKgInput = document.querySelector(`input[oninput*="'${exId}_${setIdx+1}_kg'"]`);
+    if (nextKgInput && !nextKgInput.value) nextKgInput.placeholder = kg;
+  }
+  if (!isTopSet && reps) {
+    const nextRepsInput = document.querySelector(`input[oninput*="'${exId}_${setIdx+1}_reps'"]`);
+    if (nextRepsInput && !nextRepsInput.value) nextRepsInput.placeholder = reps;
   }
 }
 
@@ -2449,21 +2517,26 @@ function saveVeloSession() {
 
 
 // ---- HEATMAP ----
+let heatmapOffset = 0;
+
+function shiftHeatmap(dir) {
+  heatmapOffset += dir;
+  if (heatmapOffset > 0) heatmapOffset = 0;
+  render();
+}
+
 function renderHeatmap() {
   const today = new Date();
-  const weeksToShow = 16;
+  const weeksToShow = 12;
   const dayColors = { 'A': 'var(--red)', 'B': 'var(--blue)', 'C': 'var(--green)' };
   const veloColor = 'var(--yellow)';
 
-  // Build a map of date -> sessions (muscu)
   const sessionMap = {};
   state.history.forEach(h => {
     const dateKey = h.date.slice(0, 10);
     if (!sessionMap[dateKey]) sessionMap[dateKey] = { muscu: [], velo: false };
     sessionMap[dateKey].muscu.push(h.dayId);
   });
-
-  // Add cycling sessions
   if (state.veloSessions) {
     state.veloSessions.forEach(v => {
       const dateKey = v.date.slice(0, 10);
@@ -2472,13 +2545,16 @@ function renderHeatmap() {
     });
   }
 
-  // Generate weeks (columns) from weeksToShow ago to today
-  const startDate = new Date(today);
+  // End date shifts by offset
+  const endDate = new Date(today);
+  endDate.setDate(endDate.getDate() + heatmapOffset * weeksToShow * 7);
+  const startDate = new Date(endDate);
   startDate.setDate(startDate.getDate() - (weeksToShow * 7) - startDate.getDay() + 1);
 
   const weeks = [];
   const monthLabels = [];
   let lastMonth = -1;
+  let firstDate = null, lastDate = null;
 
   for (let w = 0; w < weeksToShow; w++) {
     const week = [];
@@ -2489,8 +2565,8 @@ function renderHeatmap() {
       const data = sessionMap[key] || { muscu: [], velo: false };
       const isFuture = cellDate > today;
       week.push({ date: cellDate, key, ...data, isFuture });
-
-      // Track month labels
+      if (!firstDate) firstDate = new Date(cellDate);
+      lastDate = new Date(cellDate);
       if (d === 0) {
         const m = cellDate.getMonth();
         if (m !== lastMonth) {
@@ -2502,10 +2578,20 @@ function renderHeatmap() {
     weeks.push(week);
   }
 
-  let html = `<div class="card heatmap">
-    <div class="heatmap-title" style="margin-bottom:12px">Activité</div>`;
+  const periodLabel = firstDate && lastDate
+    ? `${firstDate.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})} — ${lastDate.toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'})}`
+    : '';
 
-  // Month labels
+  let html = `<div class="card heatmap">
+    <div class="heatmap-nav">
+      <button class="heatmap-nav-btn" onclick="event.stopPropagation();shiftHeatmap(-1)">‹</button>
+      <div style="text-align:center">
+        <div class="heatmap-title" style="margin:0">Activité</div>
+        <div class="heatmap-nav-label">${periodLabel}</div>
+      </div>
+      <button class="heatmap-nav-btn" onclick="event.stopPropagation();shiftHeatmap(1)" ${heatmapOffset >= 0 ? 'disabled' : ''}>›</button>
+    </div>`;
+
   html += '<div class="heatmap-wrap">';
   html += '<div class="heatmap-months">';
   let lastWeekIdx = -1;
@@ -2517,17 +2603,13 @@ function renderHeatmap() {
   });
   html += '</div>';
 
-  // Grid
   html += '<div class="heatmap-grid">';
-
-  // Day labels
   html += '<div class="heatmap-day-labels">';
   ['L','','M','','V','','D'].forEach(l => {
     html += `<div class="heatmap-day-label">${l}</div>`;
   });
   html += '</div>';
 
-  // Weeks
   html += '<div class="heatmap-weeks">';
   weeks.forEach(week => {
     html += '<div class="heatmap-week">';
@@ -2538,7 +2620,6 @@ function renderHeatmap() {
         bg = 'transparent';
         border = 'border:1px solid var(--border);';
       } else if (cell.muscu.length > 0 && cell.velo) {
-        // Both muscu and velo same day — use a gradient
         const muscuCol = dayColors[cell.muscu[0]] || 'var(--green)';
         bg = `linear-gradient(135deg, ${muscuCol} 50%, ${veloColor} 50%)`;
       } else if (cell.muscu.length >= 2) {
@@ -2550,13 +2631,12 @@ function renderHeatmap() {
       }
       const isToday = cell.key === today.toISOString().slice(0, 10);
       const todayBorder = isToday ? 'border:1.5px solid #fff;' : '';
-      html += `<div class="heatmap-cell" style="background:${bg};${border}${todayBorder}" title="${cell.key}"></div>`;
+      html += `<div class="heatmap-cell" style="background:${bg};${border}${todayBorder}"></div>`;
     });
     html += '</div>';
   });
   html += '</div></div></div>';
 
-  // Legend inside the card
   html += `<div style="display:flex;gap:10px;align-items:center;justify-content:center;margin-top:12px;font-size:10px;color:var(--text3);flex-wrap:wrap">
     <span>Repos</span><div class="heatmap-cell" style="width:11px;height:11px"></div>
     <span>Jour A</span><div class="heatmap-cell" style="width:11px;height:11px;background:var(--red)"></div>
