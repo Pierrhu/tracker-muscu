@@ -475,6 +475,7 @@
   .heatmap-months { display: flex; gap: 0; margin-bottom: 4px; padding-left: 22px; }
   .heatmap-month { font-size: 9px; color: var(--text3); }
   .heatmap-grid { display: flex; gap: 2px; }
+  .heatmap-wrap { display: flex; flex-direction: column; align-items: center; }
   .heatmap-day-labels { display: flex; flex-direction: column; gap: 2px; margin-right: 4px; justify-content: space-between; }
   .heatmap-day-label { font-size: 8px; color: var(--text3); height: 11px; line-height: 11px; }
   .heatmap-weeks { display: flex; gap: 2px; flex: 1; overflow: hidden; }
@@ -1272,8 +1273,8 @@ function renderWorkout() {
   });
   html += '</div>';
 
-  html += `<div style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:12px">${day.subtitle}</div>`;
-  
+  html += `<div style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:12px">${day.subtitle} — Tape pour saisir · Swipe ← pour voir le mouvement</div>`;
+
   // Compute suggestions for this day
   const suggestions = getSuggestions(day);
 
@@ -1288,10 +1289,17 @@ function renderWorkout() {
     if (ex.dropSet) tagHtml = '<span class="tag tag-drop">DROP SET</span>';
     if (sugg) tagHtml += `<span class="suggestion-tag">↑ Essaie ${sugg}kg</span>`;
 
+    // Check if any sets already filled for this exercise
+    let filledSets = 0;
+    for (let i = 0; i < ex.sets; i++) {
+      if (state.current[`${ex.id}_${i}_kg`] || state.current[`${ex.id}_${i}_reps`]) filledSets++;
+    }
+    const progressTxt = filledSets > 0 ? `<span style="font-size:10px;color:${day.accent};font-weight:700;margin-left:6px">${filledSets}/${ex.sets} séries</span>` : '';
+
     html += `<div class="card ex-card${isOpen?' open':''}" style="--ex-accent:${day.accent}" data-exid="${ex.id}" onclick="toggleEx('${ex.id}')">
       <div class="ex-header">
         <div style="flex:1">${tagHtml}
-          <div class="ex-name">${ex.name}</div>
+          <div class="ex-name">${ex.name}${progressTxt}</div>
           <div class="ex-format">${ex.format}</div>
           ${lastPerf ? `<div class="ex-prev" style="text-align:left;margin-top:3px">Préc: <strong style="color:${day.accent}">${lastPerf.kg}kg×${lastPerf.reps}</strong></div>` : ''}
         </div>
@@ -2508,11 +2516,12 @@ function renderHeatmap() {
 
   let html = `<div class="card heatmap">
     <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
-      <div class="heatmap-title">Activité — ${weeksToShow} semaines</div>
+      <div class="heatmap-title">📅 Activité — ${weeksToShow} semaines</div>
       <div style="font-size:11px;color:var(--text3)">${last30} séances / 30j</div>
     </div>`;
 
   // Month labels
+  html += '<div class="heatmap-wrap">';
   html += '<div class="heatmap-months">';
   let lastWeekIdx = -1;
   monthLabels.forEach(ml => {
@@ -2560,10 +2569,10 @@ function renderHeatmap() {
     });
     html += '</div>';
   });
-  html += '</div></div>';
+  html += '</div></div></div>';
 
-  // Legend
-  html += `<div style="display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:6px;font-size:9px;color:var(--text3);flex-wrap:wrap">
+  // Legend inside the card
+  html += `<div style="display:flex;gap:8px;align-items:center;justify-content:center;margin-top:10px;font-size:9px;color:var(--text3);flex-wrap:wrap">
     <span>Repos</span><div class="heatmap-cell" style="width:9px;height:9px"></div>
     <span>Jour A</span><div class="heatmap-cell" style="width:9px;height:9px;background:var(--red)"></div>
     <span>Jour B</span><div class="heatmap-cell" style="width:9px;height:9px;background:var(--blue)"></div>
