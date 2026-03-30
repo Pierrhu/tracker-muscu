@@ -503,8 +503,9 @@
     display: flex; flex-direction: column;
     will-change: transform;
     touch-action: pan-y;
+    pointer-events: none;
   }
-  .swipe-panel.open { transform: translateX(0); }
+  .swipe-panel.open { transform: translateX(0); pointer-events: all; }
   .swipe-panel-header {
     display: flex; justify-content: space-between; align-items: flex-start;
     padding: 20px 16px 14px; border-bottom: 1px solid var(--border);
@@ -524,7 +525,9 @@
   .swipe-handle {
     position: absolute; left: -20px; top: 50%; transform: translateY(-50%);
     width: 4px; height: 48px; background: var(--border); border-radius: 2px;
+    opacity: 0; transition: opacity 0.3s;
   }
+  .swipe-panel.open .swipe-handle { opacity: 1; }
   .info-gif-container {
     width: 100%; border-radius: 12px; overflow: hidden; background: #000;
     margin-bottom: 14px; position: relative; min-height: 120px;
