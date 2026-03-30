@@ -1823,17 +1823,18 @@ function openInfoModal(exId) {
     document.getElementById('swipe-overlay').classList.add('open');
     document.getElementById('swipe-panel').classList.add('open');
   });
-
-  initSwipeToClose();
 }
 
 function closeInfoModal() {
+  const panel = document.getElementById('swipe-panel');
   document.getElementById('swipe-overlay').classList.remove('open');
-  document.getElementById('swipe-panel').classList.remove('open');
+  panel.classList.remove('open');
+  panel.style.transform = '';
+  document.getElementById('swipe-overlay').style.background = '';
 }
 
-// Swipe to close (glisser vers la droite pour fermer)
-function initSwipeToClose() {
+// Init swipe-to-close once at startup
+(function initSwipeToClose() {
   const panel = document.getElementById('swipe-panel');
   let startX = 0, startY = 0, isDragging = false;
 
@@ -1848,7 +1849,7 @@ function initSwipeToClose() {
     if (!isDragging) return;
     const dx = e.touches[0].clientX - startX;
     const dy = Math.abs(e.touches[0].clientY - startY);
-    if (dy > 30 && Math.abs(dx) < dy) return; // scroll vertical prioritaire
+    if (dy > 30 && Math.abs(dx) < dy) return;
     if (dx > 0) {
       panel.style.transform = `translateX(${dx}px)`;
       const progress = Math.min(dx / panel.offsetWidth, 1);
@@ -1864,13 +1865,12 @@ function initSwipeToClose() {
     panel.style.transition = '';
     if (dx > panel.offsetWidth * 0.35) {
       closeInfoModal();
-      panel.style.transform = '';
     } else {
       panel.style.transform = 'translateX(0)';
       document.getElementById('swipe-overlay').style.background = '';
     }
   }, { passive: true });
-}
+})();
 
 
 function resetHistory() {
