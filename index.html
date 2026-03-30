@@ -437,7 +437,31 @@
   .session-time {
     font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text);
   }
-  .session-label { font-size: 11px; color: var(--text3); }
+  .session-label { font-size: 11px; color: var(--text3); flex: 1; }
+  .session-stop {
+    padding: 5px 12px; border-radius: 8px; border: none;
+    background: rgba(194,59,59,0.15); color: var(--red);
+    font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit;
+  }
+  .session-stop:active { opacity: 0.7; }
+
+  /* CYCLING MODAL */
+  .velo-btn {
+    width: 100%; padding: 12px; border: 1.5px solid rgba(228,162,41,0.3); border-radius: 10px;
+    background: rgba(228,162,41,0.06); color: var(--yellow);
+    font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit;
+    margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .velo-btn:active { opacity: 0.7; }
+  .velo-input-row { display: flex; gap: 10px; margin-bottom: 10px; }
+  .velo-field { flex: 1; }
+  .velo-field label { display: block; font-size: 11px; color: var(--text3); margin-bottom: 4px; }
+  .velo-field input, .velo-field select {
+    width: 100%; padding: 10px; background: var(--bg); border: 1.5px solid var(--border);
+    border-radius: 8px; color: var(--text); font-size: 14px; font-weight: 600;
+    outline: none; font-family: inherit; -webkit-appearance: none;
+  }
+  .velo-field select { -moz-appearance: none; }
 
   /* LIVE 1RM */
   .live-1rm {
@@ -596,6 +620,42 @@
   <div class="session-dot"></div>
   <div class="session-time" id="session-time">00:00</div>
   <div class="session-label">Séance en cours</div>
+  <button class="session-stop" onclick="stopSession();showToast('Séance arrêtée')">Arrêter</button>
+</div>
+
+<!-- CYCLING MODAL -->
+<div class="modal-overlay hidden" id="velo-modal" onclick="if(event.target===this)closeVeloModal()">
+  <div class="modal-box">
+    <div class="modal-title">🚴 Ajouter une sortie vélo</div>
+    <div class="velo-input-row">
+      <div class="velo-field">
+        <label>Distance (km)</label>
+        <input type="number" inputmode="decimal" id="velo-distance" placeholder="ex: 42">
+      </div>
+      <div class="velo-field">
+        <label>Durée (min)</label>
+        <input type="number" inputmode="numeric" id="velo-duration" placeholder="ex: 90">
+      </div>
+    </div>
+    <div class="velo-input-row">
+      <div class="velo-field">
+        <label>Type de sortie</label>
+        <select id="velo-type">
+          <option value="endurance">🛣️ Endurance (30-40 km)</option>
+          <option value="long">🏔️ Sortie longue (100+ km)</option>
+          <option value="recup">🌿 Récupération active</option>
+        </select>
+      </div>
+    </div>
+    <div class="velo-input-row">
+      <div class="velo-field">
+        <label>Date</label>
+        <input type="date" id="velo-date">
+      </div>
+    </div>
+    <button class="btn-primary" style="background:var(--yellow)" onclick="saveVeloSession()">Enregistrer la sortie 🚴</button>
+    <button class="modal-cancel" onclick="closeVeloModal()">Annuler</button>
+  </div>
 </div>
 
 <!-- REST TIMER -->
@@ -952,6 +1012,7 @@ async function loadState() {
   if (!state.current) state.current = {};
   if (!state.history) state.history = [];
   if (!state.bodyStats) state.bodyStats = [];
+  if (!state.veloSessions) state.veloSessions = [];
 }
 
 function saveState() {
@@ -960,6 +1021,7 @@ function saveState() {
     current: state.current,
     history: state.history,
     bodyStats: state.bodyStats,
+    veloSessions: state.veloSessions,
   };
   // IndexedDB async (non-bloquant)
   idbSet(STORAGE_KEY, data).catch(() => {
@@ -1301,6 +1363,9 @@ function renderWorkout() {
   html += `<div class="card" style="margin-top:10px;font-size:12px;color:var(--text3)">
     <strong style="color:var(--text2)">+ Objectif tractions :</strong> 2×3-5 négatives (5s descente) en fin de séance. Alterner avec dips négatives.
   </div>`;
+
+  // Cycling button
+  html += `<button class="velo-btn" onclick="openVeloModal()">🚴 Ajouter une sortie vélo</button>`;
 
   document.getElementById('page-workout').innerHTML = html;
 
@@ -1704,6 +1769,21 @@ function renderProgress() {
     </div>`;
   });
 
+  // Vélo stats
+  if (state.veloSessions && state.veloSessions.length) {
+    const totalKm = state.veloSessions.reduce((a, v) => a + (v.distance || 0), 0);
+    const totalMin = state.veloSessions.reduce((a, v) => a + (v.duration || 0), 0);
+    const totalH = Math.floor(totalMin / 60);
+    const remMin = totalMin % 60;
+    html += `<div class="card" style="margin-bottom:6px;border-left:3px solid var(--yellow)">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:13px;font-weight:600;color:var(--yellow)">🚴 Vélo</span>
+        <span style="font-size:20px;font-weight:800;color:var(--yellow)">${state.veloSessions.length}</span>
+      </div>
+      <div style="font-size:11px;color:var(--text3)">sorties · ${totalKm.toFixed(0)} km · ${totalH}h${remMin > 0 ? remMin + 'min' : ''}</div>
+    </div>`;
+  }
+
   document.getElementById('page-progress').innerHTML = html;
 }
 
@@ -1763,7 +1843,15 @@ function updateBody(idx, key, val) {
 function renderHistory() {
   let html = '<h2 class="page-title">Historique des séances</h2>';
 
-  if (!state.history.length) {
+  // Merge muscu and velo into a unified timeline
+  const allEntries = [];
+  state.history.forEach((h, i) => allEntries.push({ type: 'muscu', data: h, idx: i }));
+  if (state.veloSessions) {
+    state.veloSessions.forEach((v, i) => allEntries.push({ type: 'velo', data: v, idx: i }));
+  }
+  allEntries.sort((a, b) => new Date(b.data.date) - new Date(a.data.date));
+
+  if (!allEntries.length) {
     html += `<div class="card" style="text-align:center;padding:24px">
       <div style="font-size:32px;margin-bottom:8px">📝</div>
       <div style="font-size:13px;color:var(--text3)">Aucune séance enregistrée</div>
@@ -1776,35 +1864,57 @@ function renderHistory() {
     </button>`;
     html += `<button class="btn-import" onclick="openImportModal()">📥 Charger depuis Excel</button>`;
 
-    // Map original indices for edit/delete (history is shown reversed)
-    const indexed = state.history.map((h, i) => ({h, i}));
-    [...indexed].reverse().forEach(({h, i}) => {
-      const d = PROGRAM.find(p => p.id === h.dayId);
-      if (!d) return;
-      const setCount = Object.keys(h.sets).length;
-      html += `<div class="card hist-card" style="--hist-accent:${d.accent}">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <div style="font-size:13px;font-weight:700;color:${d.accent}">${d.name} — ${d.subtitle}</div>
-            <div style="font-size:11px;color:var(--text3);margin-top:2px">${formatDate(h.date)}</div>
+    allEntries.forEach(entry => {
+      if (entry.type === 'muscu') {
+        const h = entry.data;
+        const i = entry.idx;
+        const d = PROGRAM.find(p => p.id === h.dayId);
+        if (!d) return;
+        const setCount = Object.keys(h.sets).length;
+        html += `<div class="card hist-card" style="--hist-accent:${d.accent}">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-size:13px;font-weight:700;color:${d.accent}">${d.name} — ${d.subtitle}</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">${formatDate(h.date)}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:18px;font-weight:800;color:${d.accent}">${setCount}</div>
+              <div style="font-size:10px;color:var(--text3)">séries</div>
+            </div>
           </div>
-          <div style="text-align:right">
-            <div style="font-size:18px;font-weight:800;color:${d.accent}">${setCount}</div>
-            <div style="font-size:10px;color:var(--text3)">séries</div>
+          <div class="hist-tags">
+            ${d.exercises.map(ex => {
+              const s = h.sets[`${ex.id}_0`];
+              if (!s) return '';
+              return `<span class="hist-tag">${ex.name.split(' ').slice(0,2).join(' ')} ${s.kg}kg×${s.reps}</span>`;
+            }).join('')}
           </div>
-        </div>
-        <div class="hist-tags">
-          ${d.exercises.map(ex => {
-            const s = h.sets[`${ex.id}_0`];
-            if (!s) return '';
-            return `<span class="hist-tag">${ex.name.split(' ').slice(0,2).join(' ')} ${s.kg}kg×${s.reps}</span>`;
-          }).join('')}
-        </div>
-        <div class="hist-actions">
-          <button class="hist-btn hist-btn-edit" onclick="openEditSession(${i})">✏️ Modifier</button>
-          <button class="hist-btn hist-btn-del" onclick="deleteSession(${i})">🗑 Supprimer</button>
-        </div>
-      </div>`;
+          <div class="hist-actions">
+            <button class="hist-btn hist-btn-edit" onclick="openEditSession(${i})">✏️ Modifier</button>
+            <button class="hist-btn hist-btn-del" onclick="deleteSession(${i})">🗑 Supprimer</button>
+          </div>
+        </div>`;
+      } else {
+        // Vélo session
+        const v = entry.data;
+        const vi = entry.idx;
+        const typeLabels = { endurance: '🛣️ Endurance', long: '🏔️ Sortie longue', recup: '🌿 Récup' };
+        html += `<div class="card hist-card" style="--hist-accent:var(--yellow)">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-size:13px;font-weight:700;color:var(--yellow)">🚴 Vélo — ${typeLabels[v.type] || v.type}</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">${formatDate(v.date)}</div>
+            </div>
+            <div style="text-align:right">
+              ${v.distance ? `<div style="font-size:18px;font-weight:800;color:var(--yellow)">${v.distance}<span style="font-size:11px;font-weight:600">km</span></div>` : ''}
+              ${v.duration ? `<div style="font-size:10px;color:var(--text3)">${v.duration} min</div>` : ''}
+            </div>
+          </div>
+          <div class="hist-actions">
+            <button class="hist-btn hist-btn-del" onclick="deleteVeloSession(${vi})">🗑 Supprimer</button>
+          </div>
+        </div>`;
+      }
     });
 
     html += `<button class="btn-outline" onclick="resetHistory()">Réinitialiser l'historique</button>`;
@@ -1886,6 +1996,17 @@ function deleteSession(idx) {
     state.history.splice(idx, 1);
     saveState();
     showToast('Séance supprimée');
+    render();
+  }
+}
+
+function deleteVeloSession(idx) {
+  const v = state.veloSessions[idx];
+  const label = v ? `sortie vélo du ${formatDate(v.date)}` : 'cette sortie';
+  if (confirm(`Supprimer ${label} ?`)) {
+    state.veloSessions.splice(idx, 1);
+    saveState();
+    showToast('Sortie vélo supprimée');
     render();
   }
 }
@@ -2138,8 +2259,9 @@ function closeInfoModal() {
 
 
 function resetHistory() {
-  if (confirm('Supprimer tout l\'historique ? Cette action est irréversible.')) {
+  if (confirm('Supprimer tout l\'historique (muscu + vélo) ? Cette action est irréversible.')) {
     state.history = [];
+    state.veloSessions = [];
     saveState(); showToast('Historique supprimé'); render();
   }
 }
@@ -2293,19 +2415,66 @@ function confirmImport() {
   render();
 }
 
+// ---- CYCLING SESSIONS ----
+function openVeloModal() {
+  document.getElementById('velo-date').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('velo-distance').value = '';
+  document.getElementById('velo-duration').value = '';
+  document.getElementById('velo-type').value = 'endurance';
+  document.getElementById('velo-modal').classList.remove('hidden');
+}
+
+function closeVeloModal() {
+  document.getElementById('velo-modal').classList.add('hidden');
+}
+
+function saveVeloSession() {
+  const distance = parseFloat(document.getElementById('velo-distance').value) || 0;
+  const duration = parseInt(document.getElementById('velo-duration').value) || 0;
+  const type = document.getElementById('velo-type').value;
+  const dateVal = document.getElementById('velo-date').value;
+
+  if (!distance && !duration) { showToast('Remplis au moins la distance ou la durée'); return; }
+
+  const entry = {
+    date: dateVal ? new Date(dateVal + 'T12:00:00').toISOString() : new Date().toISOString(),
+    distance,
+    duration,
+    type,
+  };
+
+  if (!state.veloSessions) state.veloSessions = [];
+  state.veloSessions.push(entry);
+  saveState();
+  closeVeloModal();
+  showToast(`Sortie vélo enregistrée ! 🚴 ${distance}km`);
+  render();
+}
+
+
 // ---- HEATMAP ----
 function renderHeatmap() {
   const today = new Date();
   const weeksToShow = 16;
   const dayColors = { 'A': 'var(--red)', 'B': 'var(--blue)', 'C': 'var(--green)' };
+  const veloColor = 'var(--yellow)';
 
-  // Build a map of date -> sessions
+  // Build a map of date -> sessions (muscu)
   const sessionMap = {};
   state.history.forEach(h => {
     const dateKey = h.date.slice(0, 10);
-    if (!sessionMap[dateKey]) sessionMap[dateKey] = [];
-    sessionMap[dateKey].push(h.dayId);
+    if (!sessionMap[dateKey]) sessionMap[dateKey] = { muscu: [], velo: false };
+    sessionMap[dateKey].muscu.push(h.dayId);
   });
+
+  // Add cycling sessions
+  if (state.veloSessions) {
+    state.veloSessions.forEach(v => {
+      const dateKey = v.date.slice(0, 10);
+      if (!sessionMap[dateKey]) sessionMap[dateKey] = { muscu: [], velo: false };
+      sessionMap[dateKey].velo = true;
+    });
+  }
 
   // Generate weeks (columns) from weeksToShow ago to today
   const startDate = new Date(today);
@@ -2321,9 +2490,9 @@ function renderHeatmap() {
       const cellDate = new Date(startDate);
       cellDate.setDate(startDate.getDate() + w * 7 + d);
       const key = cellDate.toISOString().slice(0, 10);
-      const sessions = sessionMap[key] || [];
+      const data = sessionMap[key] || { muscu: [], velo: false };
       const isFuture = cellDate > today;
-      week.push({ date: cellDate, key, sessions, isFuture });
+      week.push({ date: cellDate, key, ...data, isFuture });
 
       // Track month labels
       if (d === 0) {
@@ -2381,10 +2550,16 @@ function renderHeatmap() {
       if (cell.isFuture) {
         bg = 'transparent';
         border = 'border:1px solid var(--border);';
-      } else if (cell.sessions.length >= 2) {
-        bg = 'var(--yellow)';
-      } else if (cell.sessions.length === 1) {
-        bg = dayColors[cell.sessions[0]] || 'var(--green)';
+      } else if (cell.muscu.length > 0 && cell.velo) {
+        // Both muscu and velo same day — use a gradient
+        const muscuCol = dayColors[cell.muscu[0]] || 'var(--green)';
+        bg = `linear-gradient(135deg, ${muscuCol} 50%, ${veloColor} 50%)`;
+      } else if (cell.muscu.length >= 2) {
+        bg = 'var(--purple)';
+      } else if (cell.muscu.length === 1) {
+        bg = dayColors[cell.muscu[0]] || 'var(--green)';
+      } else if (cell.velo) {
+        bg = veloColor;
       }
       const isToday = cell.key === today.toISOString().slice(0, 10);
       const todayBorder = isToday ? 'border:1.5px solid #fff;' : '';
@@ -2395,11 +2570,12 @@ function renderHeatmap() {
   html += '</div></div>';
 
   // Legend
-  html += `<div style="display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:6px;font-size:9px;color:var(--text3)">
+  html += `<div style="display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:6px;font-size:9px;color:var(--text3);flex-wrap:wrap">
     <span>Repos</span><div class="heatmap-cell" style="width:9px;height:9px"></div>
     <span>Jour A</span><div class="heatmap-cell" style="width:9px;height:9px;background:var(--red)"></div>
     <span>Jour B</span><div class="heatmap-cell" style="width:9px;height:9px;background:var(--blue)"></div>
     <span>Jour C</span><div class="heatmap-cell" style="width:9px;height:9px;background:var(--green)"></div>
+    <span>Vélo</span><div class="heatmap-cell" style="width:9px;height:9px;background:var(--yellow)"></div>
   </div>`;
 
   html += '</div>';
