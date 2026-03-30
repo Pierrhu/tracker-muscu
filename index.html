@@ -93,7 +93,9 @@
     padding: 4px 10px; font-family: inherit; transition: color 0.15s;
   }
   .nav button.active { color: #fff; }
-  .nav button span.icon { font-size: 20px; }
+  .nav button span.icon { font-size: 20px; line-height: 1; }
+  .nav button span.icon img { width: 22px; height: 22px; opacity: 0.35; transition: opacity 0.15s; }
+  .nav button.active span.icon img { opacity: 1; }
   .nav button span.label { font-size: 9px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
 
   /* PAGE */
@@ -394,14 +396,6 @@
 
   /* TOAST PR variant */
   .toast.pr { background: #FFD700; color: #000; }
-
-  /* EXERCISE INFO LINK */
-  .info-link {
-    margin-top: 10px; padding: 8px 0 2px; border-top: 1px solid var(--border);
-    font-size: 12px; font-weight: 600; cursor: pointer;
-    text-align: center; transition: opacity 0.15s;
-  }
-  .info-link:active { opacity: 0.6; }
 
   /* SWIPE PANEL */
   .swipe-overlay {
@@ -1076,11 +1070,11 @@ function render() {
 
 function renderNav() {
   const tabs = [
-    {id:'workout',icon:'🏋️',label:'Séance'},
-    {id:'rank',icon:'🏆',label:'Rang'},
-    {id:'progress',icon:'📈',label:'Progrès'},
-    {id:'body',icon:'📏',label:'Corps'},
-    {id:'history',icon:'📋',label:'Historique'},
+    {id:'workout',icon:'<img src="icons/seance.png" alt="">',label:'Séance'},
+    {id:'rank',icon:'<img src="icons/rang.png" alt="">',label:'Rang'},
+    {id:'progress',icon:'<img src="icons/progres.png" alt="">',label:'Progrès'},
+    {id:'body',icon:'<img src="icons/corps.png" alt="">',label:'Corps'},
+    {id:'history',icon:'<img src="icons/historique.png" alt="">',label:'Historique'},
   ];
   document.getElementById('nav').innerHTML = tabs.map(t =>
     `<button class="${state.view===t.id?'active':''}" onclick="setView('${t.id}')">
