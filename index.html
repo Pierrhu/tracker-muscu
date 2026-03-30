@@ -471,17 +471,17 @@
 
   /* HEATMAP */
   .heatmap { margin-bottom: 16px; }
-  .heatmap-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
-  .heatmap-months { display: flex; gap: 0; margin-bottom: 4px; padding-left: 22px; }
-  .heatmap-month { font-size: 9px; color: var(--text3); }
-  .heatmap-grid { display: flex; gap: 2px; }
+  .heatmap-title { font-size: 15px; font-weight: 800; color: #EDEDF0; margin-bottom: 10px; }
+  .heatmap-months { display: flex; gap: 0; margin-bottom: 6px; padding-left: 28px; }
+  .heatmap-month { font-size: 10px; color: var(--text3); }
+  .heatmap-grid { display: flex; gap: 3px; }
   .heatmap-wrap { display: flex; flex-direction: column; align-items: center; }
-  .heatmap-day-labels { display: flex; flex-direction: column; gap: 2px; margin-right: 4px; justify-content: space-between; }
-  .heatmap-day-label { font-size: 8px; color: var(--text3); height: 11px; line-height: 11px; }
-  .heatmap-weeks { display: flex; gap: 2px; flex: 1; overflow: hidden; }
-  .heatmap-week { display: flex; flex-direction: column; gap: 2px; }
+  .heatmap-day-labels { display: flex; flex-direction: column; gap: 3px; margin-right: 6px; justify-content: space-between; }
+  .heatmap-day-label { font-size: 9px; color: var(--text3); height: 14px; line-height: 14px; }
+  .heatmap-weeks { display: flex; gap: 3px; flex: 1; overflow: hidden; }
+  .heatmap-week { display: flex; flex-direction: column; gap: 3px; }
   .heatmap-cell {
-    width: 11px; height: 11px; border-radius: 2px; background: var(--border);
+    width: 14px; height: 14px; border-radius: 3px; background: var(--border);
   }
 
   /* SWIPE PANEL */
@@ -1273,7 +1273,7 @@ function renderWorkout() {
   });
   html += '</div>';
 
-  html += `<div style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:12px">${day.subtitle} — Tape pour saisir · Swipe ← pour voir le mouvement</div>`;
+  html += `<div style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:12px">${day.subtitle}</div>`;
 
   // Compute suggestions for this day
   const suggestions = getSuggestions(day);
@@ -1289,23 +1289,15 @@ function renderWorkout() {
     if (ex.dropSet) tagHtml = '<span class="tag tag-drop">DROP SET</span>';
     if (sugg) tagHtml += `<span class="suggestion-tag">↑ Essaie ${sugg}kg</span>`;
 
-    // Check if any sets already filled for this exercise
-    let filledSets = 0;
-    for (let i = 0; i < ex.sets; i++) {
-      if (state.current[`${ex.id}_${i}_kg`] || state.current[`${ex.id}_${i}_reps`]) filledSets++;
-    }
-    const progressTxt = filledSets > 0 ? `<span style="font-size:10px;color:${day.accent};font-weight:700;margin-left:6px">${filledSets}/${ex.sets} séries</span>` : '';
-
     html += `<div class="card ex-card${isOpen?' open':''}" style="--ex-accent:${day.accent}" data-exid="${ex.id}" onclick="toggleEx('${ex.id}')">
       <div class="ex-header">
         <div style="flex:1">${tagHtml}
-          <div class="ex-name">${ex.name}${progressTxt}</div>
+          <div class="ex-name">${ex.name}</div>
           <div class="ex-format">${ex.format}</div>
           ${lastPerf ? `<div class="ex-prev" style="text-align:left;margin-top:3px">Préc: <strong style="color:${day.accent}">${lastPerf.kg}kg×${lastPerf.reps}</strong></div>` : ''}
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
           <div class="ex-arrow">${isOpen?'▾':'▸'}</div>
-          ${ex.info ? `<div style="font-size:10px;color:var(--text3);opacity:0.5">←</div>` : ''}
         </div>
       </div>`;
 
@@ -2507,18 +2499,8 @@ function renderHeatmap() {
     weeks.push(week);
   }
 
-  // Count stats
-  const totalDays = Object.keys(sessionMap).length;
-  const last30 = Object.keys(sessionMap).filter(k => {
-    const d = new Date(k);
-    return (today - d) / 86400000 <= 30;
-  }).length;
-
   let html = `<div class="card heatmap">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
-      <div class="heatmap-title">Activité — ${weeksToShow} semaines</div>
-      <div style="font-size:11px;color:var(--text3)">${last30} séances / 30j</div>
-    </div>`;
+    <div class="heatmap-title" style="margin-bottom:12px">Activité</div>`;
 
   // Month labels
   html += '<div class="heatmap-wrap">';
@@ -2526,8 +2508,8 @@ function renderHeatmap() {
   let lastWeekIdx = -1;
   monthLabels.forEach(ml => {
     const offset = ml.week - (lastWeekIdx + 1);
-    if (offset > 0) html += `<div style="flex:0 0 ${offset * 13}px"></div>`;
-    html += `<div class="heatmap-month" style="flex:0 0 ${13}px">${ml.label}</div>`;
+    if (offset > 0) html += `<div style="flex:0 0 ${offset * 17}px"></div>`;
+    html += `<div class="heatmap-month" style="flex:0 0 ${17}px">${ml.label}</div>`;
     lastWeekIdx = ml.week;
   });
   html += '</div>';
@@ -2572,12 +2554,12 @@ function renderHeatmap() {
   html += '</div></div></div>';
 
   // Legend inside the card
-  html += `<div style="display:flex;gap:8px;align-items:center;justify-content:center;margin-top:10px;font-size:9px;color:var(--text3);flex-wrap:wrap">
-    <span>Repos</span><div class="heatmap-cell" style="width:9px;height:9px"></div>
-    <span>Jour A</span><div class="heatmap-cell" style="width:9px;height:9px;background:var(--red)"></div>
-    <span>Jour B</span><div class="heatmap-cell" style="width:9px;height:9px;background:var(--blue)"></div>
-    <span>Jour C</span><div class="heatmap-cell" style="width:9px;height:9px;background:var(--green)"></div>
-    <span>Vélo</span><div class="heatmap-cell" style="width:9px;height:9px;background:var(--yellow)"></div>
+  html += `<div style="display:flex;gap:10px;align-items:center;justify-content:center;margin-top:12px;font-size:10px;color:var(--text3);flex-wrap:wrap">
+    <span>Repos</span><div class="heatmap-cell" style="width:11px;height:11px"></div>
+    <span>Jour A</span><div class="heatmap-cell" style="width:11px;height:11px;background:var(--red)"></div>
+    <span>Jour B</span><div class="heatmap-cell" style="width:11px;height:11px;background:var(--blue)"></div>
+    <span>Jour C</span><div class="heatmap-cell" style="width:11px;height:11px;background:var(--green)"></div>
+    <span>Vélo</span><div class="heatmap-cell" style="width:11px;height:11px;background:var(--yellow)"></div>
   </div>`;
 
   html += '</div>';
