@@ -93,9 +93,7 @@
     padding: 4px 10px; font-family: inherit; transition: color 0.15s;
   }
   .nav button.active { color: #fff; }
-  .nav button span.icon { font-size: 20px; display: flex; align-items: center; justify-content: center; }
-  .nav button span.icon img { width: 26px; height: 26px; opacity: 0.35; transition: opacity 0.15s; }
-  .nav button.active span.icon img { opacity: 1; }
+  .nav button span.icon { font-size: 20px; }
   .nav button span.label { font-size: 9px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
 
   /* PAGE */
@@ -397,7 +395,6 @@
   /* TOAST PR variant */
   .toast.pr { background: #FFD700; color: #000; }
 
-  /* EXERCISE INFO MODAL */
   /* EXERCISE INFO LINK */
   .info-link {
     margin-top: 10px; padding: 8px 0 2px; border-top: 1px solid var(--border);
@@ -406,34 +403,52 @@
   }
   .info-link:active { opacity: 0.6; }
 
-  .info-modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 250;
-    display: flex; align-items: flex-end; justify-content: center;
-    animation: fadeIn 0.15s ease;
+  /* SWIPE PANEL */
+  .swipe-overlay {
+    position: fixed; inset: 0; z-index: 250;
+    background: rgba(0,0,0,0); pointer-events: none;
+    transition: background 0.3s ease;
   }
-  .info-modal-overlay.hidden { display: none; }
-  .info-modal-box {
-    background: var(--card); border-radius: 20px 20px 0 0; padding: 20px 16px 32px;
-    width: 100%; max-width: 480px; border-top: 1px solid var(--border);
-    animation: slideUp 0.25s cubic-bezier(.34,1.56,.64,1);
-    max-height: 90vh; overflow-y: auto;
+  .swipe-overlay.open {
+    background: rgba(0,0,0,0.6); pointer-events: all;
   }
-  .info-modal-header {
-    display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px;
+  .swipe-panel {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    width: 92%; max-width: 420px;
+    background: var(--card); z-index: 251;
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(.25,.46,.45,.94);
+    border-left: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    will-change: transform;
+    touch-action: pan-y;
   }
-  .info-modal-title { font-size: 16px; font-weight: 800; color: #EDEDF0; flex: 1; }
-  .info-modal-close {
+  .swipe-panel.open { transform: translateX(0); }
+  .swipe-panel-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding: 20px 16px 14px; border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .swipe-panel-title { font-size: 16px; font-weight: 800; color: #EDEDF0; flex: 1; line-height: 1.3; }
+  .swipe-panel-close {
     width: 32px; height: 32px; border-radius: 50%; border: none; background: var(--card2);
-    color: var(--text3); font-size: 18px; cursor: pointer; display: flex; align-items: center;
+    color: var(--text3); font-size: 16px; cursor: pointer; display: flex; align-items: center;
     justify-content: center; flex-shrink: 0; margin-left: 12px;
+  }
+  .swipe-panel-body {
+    flex: 1; overflow-y: auto; padding: 16px;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Swipe handle indicator */
+  .swipe-handle {
+    position: absolute; left: -20px; top: 50%; transform: translateY(-50%);
+    width: 4px; height: 48px; background: var(--border); border-radius: 2px;
   }
   .info-gif-container {
     width: 100%; border-radius: 12px; overflow: hidden; background: #000;
     margin-bottom: 14px; position: relative; min-height: 120px;
   }
-  .info-gif-container img {
-    width: 100%; height: auto; display: block;
-  }
+  .info-gif-container img { width: 100%; height: auto; display: block; }
   .info-gif-container .gif-placeholder {
     padding: 32px; text-align: center; color: var(--text3); font-size: 12px;
   }
@@ -484,8 +499,15 @@
 </div>
 
 <!-- EXERCISE INFO MODAL -->
-<div class="info-modal-overlay hidden" id="info-modal" onclick="if(event.target===this)closeInfoModal()">
-  <div class="info-modal-box" id="info-modal-box"></div>
+<!-- SWIPE PANEL INFO EXERCICE -->
+<div class="swipe-overlay" id="swipe-overlay" onclick="closeInfoModal()"></div>
+<div class="swipe-panel" id="swipe-panel">
+  <div class="swipe-handle"></div>
+  <div class="swipe-panel-header">
+    <div class="swipe-panel-title" id="swipe-panel-title"></div>
+    <button class="swipe-panel-close" onclick="closeInfoModal()">✕</button>
+  </div>
+  <div class="swipe-panel-body" id="swipe-panel-body"></div>
 </div>
 
 <!-- PR CELEBRATION MODAL -->
@@ -1054,15 +1076,15 @@ function render() {
 
 function renderNav() {
   const tabs = [
-    {id:'workout',icon:'icons/seance.png',label:'Séance'},
-    {id:'rank',icon:'icons/rang.png',label:'Rang'},
-    {id:'progress',icon:'icons/progres.png',label:'Progrès'},
-    {id:'body',icon:'icons/corps.png',label:'Corps'},
-    {id:'history',icon:'icons/historique.png',label:'Historique'},
+    {id:'workout',icon:'🏋️',label:'Séance'},
+    {id:'rank',icon:'🏆',label:'Rang'},
+    {id:'progress',icon:'📈',label:'Progrès'},
+    {id:'body',icon:'📏',label:'Corps'},
+    {id:'history',icon:'📋',label:'Historique'},
   ];
   document.getElementById('nav').innerHTML = tabs.map(t =>
     `<button class="${state.view===t.id?'active':''}" onclick="setView('${t.id}')">
-      <span class="icon"><img src="${t.icon}" alt="${t.label}"></span><span class="label">${t.label}</span>
+      <span class="icon">${t.icon}</span><span class="label">${t.label}</span>
     </button>`
   ).join('');
 }
@@ -1111,12 +1133,12 @@ function renderWorkout() {
   });
   html += '</div>';
 
-  html += `<div style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:12px">${day.subtitle} — Clique sur un exercice pour saisir</div>`;
+  html += `<div style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:12px">${day.subtitle} — Tape pour saisir · Swipe ← pour voir le mouvement</div>`;
 
   // Compute suggestions for this day
   const suggestions = getSuggestions(day);
 
-  // Exercises
+  // Exercises — always show all info, tap to open inputs, swipe for gif panel
   day.exercises.forEach(ex => {
     const isOpen = state.activeEx === ex.id;
     const lastPerf = getLastPerf(ex.id, 0);
@@ -1127,15 +1149,23 @@ function renderWorkout() {
     if (ex.dropSet) tagHtml = '<span class="tag tag-drop">DROP SET</span>';
     if (sugg) tagHtml += `<span class="suggestion-tag">↑ Essaie ${sugg}kg</span>`;
 
-    html += `<div class="card ex-card${isOpen?' open':''}" style="--ex-accent:${day.accent}" onclick="toggleEx('${ex.id}')">
+    // Check if any sets already filled for this exercise
+    let filledSets = 0;
+    for (let i = 0; i < ex.sets; i++) {
+      if (state.current[`${ex.id}_${i}_kg`] || state.current[`${ex.id}_${i}_reps`]) filledSets++;
+    }
+    const progressTxt = filledSets > 0 ? `<span style="font-size:10px;color:${day.accent};font-weight:700;margin-left:6px">${filledSets}/${ex.sets} séries</span>` : '';
+
+    html += `<div class="card ex-card${isOpen?' open':''}" style="--ex-accent:${day.accent}" data-exid="${ex.id}" onclick="toggleEx('${ex.id}')">
       <div class="ex-header">
         <div style="flex:1">${tagHtml}
-          <div class="ex-name">${ex.name}</div>
+          <div class="ex-name">${ex.name}${progressTxt}</div>
           <div class="ex-format">${ex.format}</div>
+          ${lastPerf ? `<div class="ex-prev" style="text-align:left;margin-top:3px">Préc: <strong style="color:${day.accent}">${lastPerf.kg}kg×${lastPerf.reps}</strong></div>` : ''}
         </div>
-        <div>
-          ${lastPerf ? `<div class="ex-prev">Préc: <strong style="color:${day.accent}">${lastPerf.kg}kg×${lastPerf.reps}</strong></div>` : ''}
-          <div class="ex-arrow" style="text-align:right">${isOpen?'▾':'▸'}</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <div class="ex-arrow">${isOpen?'▾':'▸'}</div>
+          ${ex.info ? `<div style="font-size:10px;color:var(--text3);opacity:0.5">←</div>` : ''}
         </div>
       </div>`;
 
@@ -1165,9 +1195,6 @@ function renderWorkout() {
         </div>`;
       }
       html += '</div>';
-      if (ex.info) {
-        html += `<div class="info-link" onclick="event.stopPropagation();openInfoModal('${ex.id}')" style="color:${day.accent}">En savoir plus →</div>`;
-      }
     }
     html += '</div>';
   });
@@ -1181,6 +1208,32 @@ function renderWorkout() {
   </div>`;
 
   document.getElementById('page-workout').innerHTML = html;
+
+  // Swipe gauche sur les cartes d'exo pour ouvrir le panneau info
+  document.querySelectorAll('.ex-card').forEach(card => {
+    const exId = card.getAttribute('data-exid');
+    if (!exId) return;
+    let startX = 0, startY = 0, tracking = false;
+
+    card.addEventListener('touchstart', e => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      tracking = true;
+    }, { passive: true });
+
+    card.addEventListener('touchmove', e => {
+      if (!tracking) return;
+      const dx = e.touches[0].clientX - startX;
+      const dy = Math.abs(e.touches[0].clientY - startY);
+      // Swipe gauche prononcé et plus horizontal que vertical
+      if (dx < -40 && dy < Math.abs(dx) * 0.6) {
+        tracking = false;
+        openInfoModal(exId);
+      }
+    }, { passive: true });
+
+    card.addEventListener('touchend', () => { tracking = false; }, { passive: true });
+  });
 }
 
 function selectDay(i) { state.dayIdx = i; state.activeEx = null; state._lastPRs = null; render(); }
@@ -1641,10 +1694,7 @@ function exportToExcel() {
 
 // ---- PR CELEBRATION ----
 const PR_GIFS = [
-  'gifs/felicitation-pd.gif',
-  'gifs/gay.gif',
-  'gifs/whyrugay.gif',
-  'gifs/shouldi.gif'
+  'gifs/felicitation-pd.gif'
 ];
 
 function openPRCelebrate(prIdx) {
@@ -1745,7 +1795,7 @@ function openInfoModal(exId) {
   let gifHtml = '';
   if (info.gif) {
     gifHtml = `<div class="info-gif-container">
-      <img src="${info.gif}" alt="${ex.name}" onerror="this.parentElement.innerHTML='<div class=\\'gif-placeholder\\'>GIF non trouvé<br><small>${info.gif}</small></div>'">
+      <img src="${info.gif}" alt="${ex.name}" onerror="this.parentElement.innerHTML='<div class=\\'gif-placeholder\\'>GIF non trouvé</div>'">
     </div>`;
   }
 
@@ -1765,24 +1815,61 @@ function openInfoModal(exId) {
     </div>`;
   }
 
-  document.getElementById('info-modal-box').innerHTML = `
-    <div class="info-modal-header">
-      <div class="info-modal-title">${ex.name}</div>
-      <button class="info-modal-close" onclick="closeInfoModal()">✕</button>
-    </div>
-    <div style="margin-bottom:10px">
-      <span class="tag" style="background:${day.accent}20;color:${day.accent}">${day.name}</span>
-      <span style="font-size:12px;color:var(--text3);margin-left:6px">${ex.format}</span>
-    </div>
-    ${gifHtml}
-    ${execHtml}
-    ${whyHtml}
-  `;
-  document.getElementById('info-modal').classList.remove('hidden');
+  document.getElementById('swipe-panel-title').innerHTML =
+    `${ex.name}<br><span style="font-size:11px;color:${day.accent};font-weight:600">${day.name} · ${ex.format}</span>`;
+  document.getElementById('swipe-panel-body').innerHTML = gifHtml + execHtml + whyHtml;
+
+  requestAnimationFrame(() => {
+    document.getElementById('swipe-overlay').classList.add('open');
+    document.getElementById('swipe-panel').classList.add('open');
+  });
+
+  initSwipeToClose();
 }
 
 function closeInfoModal() {
-  document.getElementById('info-modal').classList.add('hidden');
+  document.getElementById('swipe-overlay').classList.remove('open');
+  document.getElementById('swipe-panel').classList.remove('open');
+}
+
+// Swipe to close (glisser vers la droite pour fermer)
+function initSwipeToClose() {
+  const panel = document.getElementById('swipe-panel');
+  let startX = 0, startY = 0, isDragging = false;
+
+  panel.addEventListener('touchstart', (e) => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    isDragging = true;
+    panel.style.transition = 'none';
+  }, { passive: true });
+
+  panel.addEventListener('touchmove', (e) => {
+    if (!isDragging) return;
+    const dx = e.touches[0].clientX - startX;
+    const dy = Math.abs(e.touches[0].clientY - startY);
+    if (dy > 30 && Math.abs(dx) < dy) return; // scroll vertical prioritaire
+    if (dx > 0) {
+      panel.style.transform = `translateX(${dx}px)`;
+      const progress = Math.min(dx / panel.offsetWidth, 1);
+      document.getElementById('swipe-overlay').style.background =
+        `rgba(0,0,0,${0.6 * (1 - progress)})`;
+    }
+  }, { passive: true });
+
+  panel.addEventListener('touchend', (e) => {
+    if (!isDragging) return;
+    isDragging = false;
+    const dx = e.changedTouches[0].clientX - startX;
+    panel.style.transition = '';
+    if (dx > panel.offsetWidth * 0.35) {
+      closeInfoModal();
+      panel.style.transform = '';
+    } else {
+      panel.style.transform = 'translateX(0)';
+      document.getElementById('swipe-overlay').style.background = '';
+    }
+  }, { passive: true });
 }
 
 
