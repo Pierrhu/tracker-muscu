@@ -397,6 +397,68 @@
   /* TOAST PR variant */
   .toast.pr { background: #FFD700; color: #000; }
 
+  /* REST TIMER */
+  .rest-timer {
+    position: fixed; bottom: 68px; left: 50%; transform: translateX(-50%);
+    width: calc(100% - 28px); max-width: 452px; z-index: 90;
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 12px 16px; display: none;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+  }
+  .rest-timer.active { display: flex; align-items: center; gap: 12px; }
+  .rest-timer-time {
+    font-size: 28px; font-weight: 800; font-variant-numeric: tabular-nums;
+    min-width: 70px;
+  }
+  .rest-timer-bar { flex: 1; height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; }
+  .rest-timer-fill { height: 100%; border-radius: 3px; transition: width 1s linear; }
+  .rest-timer-label { font-size: 10px; color: var(--text3); margin-top: 2px; }
+  .rest-timer-btns { display: flex; gap: 6px; }
+  .rest-timer-btn {
+    width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
+    font-family: inherit;
+  }
+  .rest-timer-skip { background: var(--card2); color: var(--text3); }
+  .rest-timer-skip:active { background: var(--border); }
+
+  /* SESSION TIMER */
+  .session-bar {
+    display: none; position: sticky; top: 0; z-index: 80;
+    background: var(--card); border-bottom: 1px solid var(--border);
+    padding: 8px 14px; align-items: center; gap: 10px;
+  }
+  .session-bar.active { display: flex; }
+  .session-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--red);
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .session-time {
+    font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text);
+  }
+  .session-label { font-size: 11px; color: var(--text3); }
+
+  /* LIVE 1RM */
+  .live-1rm {
+    font-size: 11px; font-weight: 600; margin-top: 2px;
+    padding: 3px 8px; border-radius: 6px; display: inline-block;
+  }
+
+  /* HEATMAP */
+  .heatmap { margin-bottom: 16px; }
+  .heatmap-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+  .heatmap-months { display: flex; gap: 0; margin-bottom: 4px; padding-left: 22px; }
+  .heatmap-month { font-size: 9px; color: var(--text3); }
+  .heatmap-grid { display: flex; gap: 2px; }
+  .heatmap-day-labels { display: flex; flex-direction: column; gap: 2px; margin-right: 4px; justify-content: space-between; }
+  .heatmap-day-label { font-size: 8px; color: var(--text3); height: 11px; line-height: 11px; }
+  .heatmap-weeks { display: flex; gap: 2px; flex: 1; overflow: hidden; }
+  .heatmap-week { display: flex; flex-direction: column; gap: 2px; }
+  .heatmap-cell {
+    width: 11px; height: 11px; border-radius: 2px; background: var(--border);
+  }
+
   /* SWIPE PANEL */
   .swipe-overlay {
     position: fixed; inset: 0; z-index: 250;
@@ -526,6 +588,27 @@
     <div class="import-preview" id="import-preview" style="display:none"></div>
     <button class="btn-primary" id="import-confirm-btn" style="background:var(--blue);display:none" onclick="confirmImport()">Importer les séances ✓</button>
     <button class="modal-cancel" onclick="closeImportModal()">Annuler</button>
+  </div>
+</div>
+
+<!-- SESSION TIMER BAR -->
+<div class="session-bar" id="session-bar">
+  <div class="session-dot"></div>
+  <div class="session-time" id="session-time">00:00</div>
+  <div class="session-label">Séance en cours</div>
+</div>
+
+<!-- REST TIMER -->
+<div class="rest-timer" id="rest-timer">
+  <div>
+    <div class="rest-timer-time" id="rest-timer-time">0:00</div>
+    <div class="rest-timer-label" id="rest-timer-label">Repos</div>
+  </div>
+  <div style="flex:1">
+    <div class="rest-timer-bar"><div class="rest-timer-fill" id="rest-timer-fill"></div></div>
+  </div>
+  <div class="rest-timer-btns">
+    <button class="rest-timer-btn rest-timer-skip" onclick="skipRestTimer()">✕</button>
   </div>
 </div>
 
@@ -1176,17 +1259,35 @@ function renderWorkout() {
             <input type="number" inputmode="decimal" placeholder="${prev?prev.kg:'kg'}"
               value="${state.current[kgKey]||''}"
               onclick="event.stopPropagation()"
-              oninput="event.stopPropagation();updateSet('${kgKey}',this.value)">
+              oninput="event.stopPropagation();updateSet('${kgKey}',this.value);onSetInput('${ex.id}',${i},'${kgKey}','${repsKey}',${ex.topSet||false},'${ex.rankKey||''}')">
             <span class="unit">kg</span>
           </div>
           <div class="input-wrap">
             <input type="number" inputmode="numeric" placeholder="${prev?prev.reps:'reps'}"
               value="${state.current[repsKey]||''}"
               onclick="event.stopPropagation()"
-              oninput="event.stopPropagation();updateSet('${repsKey}',this.value)">
+              oninput="event.stopPropagation();updateSet('${repsKey}',this.value);onSetInput('${ex.id}',${i},'${kgKey}','${repsKey}',${ex.topSet||false},'${ex.rankKey||''}')">
             <span class="unit">reps</span>
           </div>
         </div>`;
+        // Live 1RM for top sets
+        if (ex.topSet && i === 0) {
+          const curKg = parseFloat(state.current[kgKey])||0;
+          const curReps = parseInt(state.current[repsKey])||0;
+          let rmHtml = '';
+          if (curKg > 0 && curReps > 0) {
+            const rm = calc1RM(curKg, curReps);
+            const bw = state.bodyWeight || 95;
+            const ratio = rm / bw;
+            const rk = ex.rankKey ? getRankIdx(ratio, STANDARDS[ex.rankKey].thresholds) : -1;
+            const rkObj = rk >= 0 ? RANKS[rk] : null;
+            const rkCls = rkObj ? rkObj.cls : '';
+            rmHtml = `<span class="live-1rm ${rkCls}" style="background:${rkObj ? 'rgba(255,255,255,0.06)' : 'transparent'};color:var(--text2)">
+              1RM: ${rm.toFixed(1)}kg · ${ratio.toFixed(2)}×BW ${rkObj ? rkObj.icon + ' ' + rkObj.name : ''}
+            </span>`;
+          }
+          html += `<div id="live1rm-${ex.id}" style="margin:-4px 0 6px 56px">${rmHtml}</div>`;
+        }
       }
       html += '</div>';
     }
@@ -1234,6 +1335,168 @@ function selectDay(i) { state.dayIdx = i; state.activeEx = null; state._lastPRs 
 function toggleEx(id) { state.activeEx = state.activeEx === id ? null : id; render(); }
 function updateSet(key, val) { state.current[key] = val; saveState(); }
 
+// ---- REST TIMER ----
+let restTimerInterval = null;
+let restTimerEnd = 0;
+let restTimerDuration = 0;
+
+function getRestDuration(exId) {
+  for (const day of PROGRAM) {
+    for (const ex of day.exercises) {
+      if (ex.id === exId) {
+        if (ex.topSet) return 180; // 3 min
+        if (ex.superset) return 90; // 1:30
+        if (ex.dropSet) return 90;
+        // Check format for rep range hints
+        const f = ex.format;
+        if (f.includes('6-8') || f.includes('6-10')) return 150; // 2:30
+        if (f.includes('8-10') || f.includes('10-12')) return 120; // 2 min
+        return 90; // 1:30 default for isolation
+      }
+    }
+  }
+  return 120;
+}
+
+function onSetInput(exId, setIdx, kgKey, repsKey, isTopSet, rankKey) {
+  // Start session timer on first input
+  if (!state._sessionActive) startSession();
+
+  // Check if both kg and reps are filled for this set
+  const kg = state.current[kgKey];
+  const reps = state.current[repsKey];
+  if (kg && reps && parseFloat(kg) > 0 && parseInt(reps) > 0) {
+    // Start rest timer
+    const duration = getRestDuration(exId);
+    startRestTimer(duration, exId);
+  }
+
+  // Live 1RM update (without re-render to keep focus)
+  if (isTopSet && setIdx === 0 && rankKey) {
+    const el = document.getElementById('live1rm-' + exId);
+    if (el) {
+      const k = parseFloat(state.current[kgKey]) || 0;
+      const r = parseInt(state.current[repsKey]) || 0;
+      if (k > 0 && r > 0) {
+        const rm = calc1RM(k, r);
+        const bw = state.bodyWeight || 95;
+        const ratio = rm / bw;
+        const rk = getRankIdx(ratio, STANDARDS[rankKey].thresholds);
+        const rkObj = rk >= 0 ? RANKS[rk] : null;
+        el.innerHTML = `<span class="live-1rm ${rkObj?rkObj.cls:''}" style="background:${rkObj?'rgba(255,255,255,0.06)':'transparent'};color:var(--text2)">
+          1RM: ${rm.toFixed(1)}kg · ${ratio.toFixed(2)}×BW ${rkObj ? rkObj.icon+' '+rkObj.name : ''}
+        </span>`;
+      } else {
+        el.innerHTML = '';
+      }
+    }
+  }
+}
+
+function startRestTimer(duration, exId) {
+  // Don't restart if already running for same duration
+  if (restTimerInterval) clearInterval(restTimerInterval);
+
+  restTimerDuration = duration;
+  restTimerEnd = Date.now() + duration * 1000;
+
+  const el = document.getElementById('rest-timer');
+  const timeEl = document.getElementById('rest-timer-time');
+  const fillEl = document.getElementById('rest-timer-fill');
+  const labelEl = document.getElementById('rest-timer-label');
+  const day = PROGRAM[state.dayIdx];
+
+  el.classList.add('active');
+  fillEl.style.background = day ? day.accent : 'var(--blue)';
+  labelEl.textContent = `Repos — ${Math.floor(duration/60)}:${(duration%60).toString().padStart(2,'0')}`;
+
+  restTimerInterval = setInterval(() => {
+    const remaining = Math.max(0, Math.ceil((restTimerEnd - Date.now()) / 1000));
+    const min = Math.floor(remaining / 60);
+    const sec = remaining % 60;
+    timeEl.textContent = `${min}:${sec.toString().padStart(2,'0')}`;
+    timeEl.style.color = remaining <= 5 ? 'var(--green)' : 'var(--text)';
+
+    const pct = ((duration - remaining) / duration) * 100;
+    fillEl.style.width = pct + '%';
+
+    if (remaining <= 0) {
+      clearInterval(restTimerInterval);
+      restTimerInterval = null;
+      timeEl.textContent = 'GO !';
+      timeEl.style.color = 'var(--green)';
+      fillEl.style.width = '100%';
+      // Vibrate if available
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      // Auto-hide after 3s
+      setTimeout(() => {
+        el.classList.remove('active');
+      }, 3000);
+    }
+  }, 250);
+}
+
+function skipRestTimer() {
+  if (restTimerInterval) clearInterval(restTimerInterval);
+  restTimerInterval = null;
+  document.getElementById('rest-timer').classList.remove('active');
+}
+
+// ---- SESSION TIMER ----
+let sessionInterval = null;
+let sessionStart = 0;
+let wakeLock = null;
+
+function startSession() {
+  if (state._sessionActive) return;
+  state._sessionActive = true;
+  sessionStart = Date.now();
+
+  document.getElementById('session-bar').classList.add('active');
+
+  sessionInterval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - sessionStart) / 1000);
+    const min = Math.floor(elapsed / 60);
+    const sec = elapsed % 60;
+    document.getElementById('session-time').textContent =
+      `${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
+  }, 1000);
+
+  // Request wake lock
+  requestWakeLock();
+}
+
+function stopSession() {
+  state._sessionActive = false;
+  if (sessionInterval) clearInterval(sessionInterval);
+  sessionInterval = null;
+  document.getElementById('session-bar').classList.remove('active');
+  releaseWakeLock();
+}
+
+async function requestWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+    }
+  } catch(e) { console.log('Wake Lock non disponible'); }
+}
+
+function releaseWakeLock() {
+  if (wakeLock) {
+    wakeLock.release();
+    wakeLock = null;
+  }
+}
+
+// Re-acquire wake lock when page becomes visible again
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && state._sessionActive) {
+    requestWakeLock();
+  }
+});
+
 function finishSession(dayId) {
   const day = PROGRAM.find(d => d.id === dayId);
   const entry = { dayId, date: new Date().toISOString(), sets: {} };
@@ -1251,6 +1514,10 @@ function finishSession(dayId) {
   });
 
   if (!hasData) { showToast('Saisis au moins une série !'); return; }
+
+  // Stop timers
+  stopSession();
+  skipRestTimer();
 
   // Clear current
   day.exercises.forEach(ex => {
@@ -1383,6 +1650,9 @@ function renderProgress() {
       <div style="font-size:11px;color:var(--text3);margin-top:2px">${streak===0?'Commence ta première séance !':streak===1?'Premier pas, continue !':'Belle régularité, continue !'}</div>
     </div>
   </div>`;
+
+  // ---- HEATMAP CALENDAR ----
+  html += renderHeatmap();
 
   const topExercises = PROGRAM.flatMap(d => d.exercises.filter(e => e.topSet).map(e => ({...e, accent: d.accent})));
 
@@ -2022,6 +2292,120 @@ function confirmImport() {
   showToast(`${toAdd.length} séance${toAdd.length>1?'s':''} importée${toAdd.length>1?'s':''} ✓`);
   render();
 }
+
+// ---- HEATMAP ----
+function renderHeatmap() {
+  const today = new Date();
+  const weeksToShow = 16;
+  const dayColors = { 'A': 'var(--red)', 'B': 'var(--blue)', 'C': 'var(--green)' };
+
+  // Build a map of date -> sessions
+  const sessionMap = {};
+  state.history.forEach(h => {
+    const dateKey = h.date.slice(0, 10);
+    if (!sessionMap[dateKey]) sessionMap[dateKey] = [];
+    sessionMap[dateKey].push(h.dayId);
+  });
+
+  // Generate weeks (columns) from weeksToShow ago to today
+  const startDate = new Date(today);
+  startDate.setDate(startDate.getDate() - (weeksToShow * 7) - startDate.getDay() + 1);
+
+  const weeks = [];
+  const monthLabels = [];
+  let lastMonth = -1;
+
+  for (let w = 0; w < weeksToShow; w++) {
+    const week = [];
+    for (let d = 0; d < 7; d++) {
+      const cellDate = new Date(startDate);
+      cellDate.setDate(startDate.getDate() + w * 7 + d);
+      const key = cellDate.toISOString().slice(0, 10);
+      const sessions = sessionMap[key] || [];
+      const isFuture = cellDate > today;
+      week.push({ date: cellDate, key, sessions, isFuture });
+
+      // Track month labels
+      if (d === 0) {
+        const m = cellDate.getMonth();
+        if (m !== lastMonth) {
+          monthLabels.push({ week: w, label: cellDate.toLocaleDateString('fr-FR', { month: 'short' }) });
+          lastMonth = m;
+        }
+      }
+    }
+    weeks.push(week);
+  }
+
+  // Count stats
+  const totalDays = Object.keys(sessionMap).length;
+  const last30 = Object.keys(sessionMap).filter(k => {
+    const d = new Date(k);
+    return (today - d) / 86400000 <= 30;
+  }).length;
+
+  let html = `<div class="card heatmap">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
+      <div class="heatmap-title">📅 Activité — ${weeksToShow} semaines</div>
+      <div style="font-size:11px;color:var(--text3)">${last30} séances / 30j</div>
+    </div>`;
+
+  // Month labels
+  html += '<div class="heatmap-months">';
+  let lastWeekIdx = -1;
+  monthLabels.forEach(ml => {
+    const offset = ml.week - (lastWeekIdx + 1);
+    if (offset > 0) html += `<div style="flex:0 0 ${offset * 13}px"></div>`;
+    html += `<div class="heatmap-month" style="flex:0 0 ${13}px">${ml.label}</div>`;
+    lastWeekIdx = ml.week;
+  });
+  html += '</div>';
+
+  // Grid
+  html += '<div class="heatmap-grid">';
+
+  // Day labels
+  html += '<div class="heatmap-day-labels">';
+  ['L','','M','','V','','D'].forEach(l => {
+    html += `<div class="heatmap-day-label">${l}</div>`;
+  });
+  html += '</div>';
+
+  // Weeks
+  html += '<div class="heatmap-weeks">';
+  weeks.forEach(week => {
+    html += '<div class="heatmap-week">';
+    week.forEach(cell => {
+      let bg = 'var(--border)';
+      let border = '';
+      if (cell.isFuture) {
+        bg = 'transparent';
+        border = 'border:1px solid var(--border);';
+      } else if (cell.sessions.length >= 2) {
+        bg = 'var(--yellow)';
+      } else if (cell.sessions.length === 1) {
+        bg = dayColors[cell.sessions[0]] || 'var(--green)';
+      }
+      const isToday = cell.key === today.toISOString().slice(0, 10);
+      const todayBorder = isToday ? 'border:1.5px solid #fff;' : '';
+      html += `<div class="heatmap-cell" style="background:${bg};${border}${todayBorder}" title="${cell.key}"></div>`;
+    });
+    html += '</div>';
+  });
+  html += '</div></div>';
+
+  // Legend
+  html += `<div style="display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:6px;font-size:9px;color:var(--text3)">
+    <span>Repos</span><div class="heatmap-cell" style="width:9px;height:9px"></div>
+    <span>Jour A</span><div class="heatmap-cell" style="width:9px;height:9px;background:var(--red)"></div>
+    <span>Jour B</span><div class="heatmap-cell" style="width:9px;height:9px;background:var(--blue)"></div>
+    <span>Jour C</span><div class="heatmap-cell" style="width:9px;height:9px;background:var(--green)"></div>
+  </div>`;
+
+  html += '</div>';
+  return html;
+}
+
 
 // ============ INIT ============
 (async () => {
