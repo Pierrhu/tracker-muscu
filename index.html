@@ -93,7 +93,9 @@
     padding: 4px 10px; font-family: inherit; transition: color 0.15s;
   }
   .nav button.active { color: #fff; }
-  .nav button span.icon { font-size: 20px; }
+  .nav button span.icon { font-size: 20px; display: flex; align-items: center; justify-content: center; }
+  .nav button span.icon img { width: 24px; height: 24px; opacity: 0.4; transition: opacity 0.15s; filter: brightness(0) invert(1); }
+  .nav button.active span.icon img { opacity: 1; }
   .nav button span.label { font-size: 9px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
 
   /* PAGE */
@@ -1052,15 +1054,15 @@ function render() {
 
 function renderNav() {
   const tabs = [
-    {id:'workout',icon:'🏋️',label:'Séance'},
-    {id:'rank',icon:'🏆',label:'Rang'},
-    {id:'progress',icon:'📈',label:'Progrès'},
-    {id:'body',icon:'📏',label:'Corps'},
-    {id:'history',icon:'📋',label:'Historique'},
+    {id:'workout',icon:'icons/seance.png',label:'Séance'},
+    {id:'rank',icon:'icons/rang.png',label:'Rang'},
+    {id:'progress',icon:'icons/progres.png',label:'Progrès'},
+    {id:'body',icon:'icons/corps.png',label:'Corps'},
+    {id:'history',icon:'icons/historique.png',label:'Historique'},
   ];
   document.getElementById('nav').innerHTML = tabs.map(t =>
     `<button class="${state.view===t.id?'active':''}" onclick="setView('${t.id}')">
-      <span class="icon">${t.icon}</span><span class="label">${t.label}</span>
+      <span class="icon"><img src="${t.icon}" alt="${t.label}"></span><span class="label">${t.label}</span>
     </button>`
   ).join('');
 }
