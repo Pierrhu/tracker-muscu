@@ -1288,17 +1288,10 @@ function renderWorkout() {
     if (ex.dropSet) tagHtml = '<span class="tag tag-drop">DROP SET</span>';
     if (sugg) tagHtml += `<span class="suggestion-tag">↑ Essaie ${sugg}kg</span>`;
 
-    // Check if any sets already filled for this exercise
-    let filledSets = 0;
-    for (let i = 0; i < ex.sets; i++) {
-      if (state.current[`${ex.id}_${i}_kg`] || state.current[`${ex.id}_${i}_reps`]) filledSets++;
-    }
-    const progressTxt = filledSets > 0 ? `<span style="font-size:10px;color:${day.accent};font-weight:700;margin-left:6px">${filledSets}/${ex.sets} séries</span>` : '';
-
     html += `<div class="card ex-card${isOpen?' open':''}" style="--ex-accent:${day.accent}" data-exid="${ex.id}" onclick="toggleEx('${ex.id}')">
       <div class="ex-header">
         <div style="flex:1">${tagHtml}
-          <div class="ex-name">${ex.name}${progressTxt}</div>
+          <div class="ex-name">${ex.name}</div>
           <div class="ex-format">${ex.format}</div>
           ${lastPerf ? `<div class="ex-prev" style="text-align:left;margin-top:3px">Préc: <strong style="color:${day.accent}">${lastPerf.kg}kg×${lastPerf.reps}</strong></div>` : ''}
         </div>
