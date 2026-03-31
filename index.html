@@ -217,6 +217,12 @@
 
   .rank-card::before { background: var(--rc); }
 
+  /* RANK IMAGES */
+  .rank-img { width: 20px; height: 20px; vertical-align: middle; }
+  .rank-badge .rank-img { width: 18px; height: 18px; }
+  .overall-rank .rank-icon .rank-img { width: 64px; height: 64px; }
+  .live-1rm .rank-img { width: 16px; height: 16px; }
+
   .overall-rank {
     text-align: center; padding: 24px 16px; margin-bottom: 16px;
     background: var(--card); border-radius: 16px; border: 1px solid var(--border);
@@ -921,14 +927,14 @@ const PROGRAM = [
 // Strength standards: 1RM / BW ratio thresholds for each rank
 // Based on established strength standards for males
 const RANKS = [
-  {name:'Bronze',icon:'🥉',cls:'rank-bronze'},
-  {name:'Argent',icon:'🥈',cls:'rank-argent'},
-  {name:'Or',icon:'🥇',cls:'rank-or'},
-  {name:'Platine',icon:'💠',cls:'rank-platine'},
-  {name:'Diamant',icon:'💎',cls:'rank-diamant'},
-  {name:'Écarlate',icon:'🔥',cls:'rank-ecarlate'},
-  {name:'Iridescent',icon:'🌈',cls:'rank-iridescent'},
-  {name:'Top 250',icon:'👑',cls:'rank-top250'},
+  {name:'Bronze',icon:'<img src="ranks/bronze.png" class="rank-img">',cls:'rank-bronze'},
+  {name:'Argent',icon:'<img src="ranks/argent.png" class="rank-img">',cls:'rank-argent'},
+  {name:'Or',icon:'<img src="ranks/or.png" class="rank-img">',cls:'rank-or'},
+  {name:'Platine',icon:'<img src="ranks/platine.png" class="rank-img">',cls:'rank-platine'},
+  {name:'Diamant',icon:'<img src="ranks/diamant.png" class="rank-img">',cls:'rank-diamant'},
+  {name:'Écarlate',icon:'<img src="ranks/ecarlate.png" class="rank-img">',cls:'rank-ecarlate'},
+  {name:'Iridescent',icon:'<img src="ranks/iridescent.png" class="rank-img">',cls:'rank-iridescent'},
+  {name:'Top 250',icon:'<img src="ranks/top250.png" class="rank-img">',cls:'rank-top250'},
 ];
 
 // Ratio thresholds [bronze, argent, or, platine, diamant, ecarlate, iridescent, top250]
@@ -1329,52 +1335,18 @@ function renderWorkout() {
         let sugReps = prev ? prev.reps : '';
 
         if (ex.topSet && i > 0) {
-          // Smart back-off: RPE-based fatigue model
-          // After top set, estimate difficulty from reps vs target range
-          // Target back-off: ~3 reps above top set reps, heavy enough to stay in 6-8 range
+          // Back-off set: if top set is filled, suggest ~85%
           const topKg = parseFloat(state.current[`${ex.id}_0_kg`]);
           const topReps = parseInt(state.current[`${ex.id}_0_reps`]);
-          const prevSetKg = i > 1 ? parseFloat(state.current[`${ex.id}_${i-1}_kg`]) : 0;
-          const prevSetReps = i > 1 ? parseInt(state.current[`${ex.id}_${i-1}_reps`]) : 0;
-
-          if (topKg > 0 && topReps > 0) {
-            // Estimate intensity factor: if top set was very hard (3-4 reps), use 80%; if easier (5 reps), use 85%
-            // Epley-based: target 7 reps at back-off weight
-            const targetBackoffReps = 7;
-            const top1RM = calc1RM(topKg, topReps);
-            // Weight to hit target reps = 1RM / (1 + targetReps/30)
-            let baseBackoff = top1RM / (1 + targetBackoffReps / 30);
-            // Round to nearest 2.5kg
-            baseBackoff = Math.round(baseBackoff / 2.5) * 2.5;
-
-            if (i === 1) {
-              // First back-off set: use calculated weight
-              sugKg = baseBackoff;
-              sugReps = targetBackoffReps;
-            } else if (prevSetKg > 0 && prevSetReps > 0) {
-              // Subsequent sets: adapt based on how previous back-off set went
-              // If prev reps < 6 → too heavy, drop 2.5kg; if prev reps >= 8 → on track, keep; if prev reps > 9 → can push
-              if (prevSetReps < 5) {
-                sugKg = Math.max(prevSetKg - 5, baseBackoff - 7.5);
-              } else if (prevSetReps < 6) {
-                sugKg = prevSetKg - 2.5;
-              } else if (prevSetReps >= 8) {
-                sugKg = prevSetKg; // maintenir
-              } else {
-                sugKg = prevSetKg;
-              }
-              sugKg = Math.round(sugKg / 2.5) * 2.5;
-              sugReps = prevSetReps < 6 ? Math.min(prevSetReps + 1, 8) : 7;
-            } else {
-              sugKg = baseBackoff;
-              sugReps = targetBackoffReps;
-            }
-            // Fallback to prev history if no current data
-            if (!topKg && prev) sugKg = prev.kg;
-          } else if (prev) {
-            sugKg = prev.kg;
-            sugReps = prev.reps;
+          if (topKg > 0) {
+            sugKg = (Math.round((topKg * 0.85) / 2.5) * 2.5).toFixed(1).replace('.0','');
           }
+          if (topReps > 0) {
+            sugReps = Math.min(topReps + 2, 8);
+          }
+          // Fall back to prev if nothing
+          if (!sugKg && prev) sugKg = prev.kg;
+          if (!sugReps && prev) sugReps = prev.reps;
         } else if (!ex.topSet && i > 0) {
           // Non-top-set: suggest same as previous set in this session
           const prevSetKg = state.current[`${ex.id}_${i-1}_kg`];
@@ -1400,26 +1372,6 @@ function renderWorkout() {
             <span class="unit">reps</span>
           </div>
         </div>`;
-        // RPE hint for back-off sets: show what the placeholder means
-        if (ex.topSet && i > 0 && sugKg && sugReps) {
-          const topKgNow = parseFloat(state.current[`${ex.id}_0_kg`]) || 0;
-          const topRepsNow = parseInt(state.current[`${ex.id}_0_reps`]) || 0;
-          // Only show hint if top set is filled (suggestion is live)
-          if (topKgNow > 0 && topRepsNow > 0) {
-            const prevDoneReps = i > 1 ? parseInt(state.current[`${ex.id}_${i-1}_reps`] || 0) : 0;
-            let hintMsg = '';
-            if (i === 1) {
-              hintMsg = `Calculé depuis ton 1RM estimé — vise 6-8 reps`;
-            } else if (prevDoneReps > 0 && prevDoneReps < 6) {
-              hintMsg = `Série précédente difficile (${prevDoneReps} reps) → charge réduite`;
-            } else if (prevDoneReps >= 8) {
-              hintMsg = `Bonne série (${prevDoneReps} reps) → maintien la charge`;
-            } else {
-              hintMsg = `Adapté à la série précédente`;
-            }
-            html += `<div style="margin:-6px 0 6px 56px;font-size:10px;color:var(--text3);font-style:italic">${hintMsg}</div>`;
-          }
-        }
         // Live 1RM for top sets
         if (ex.topSet && i === 0) {
           const curKg = parseFloat(state.current[kgKey])||0;
@@ -1453,7 +1405,7 @@ function renderWorkout() {
   </div>`;
 
   // Cycling button
-  html += `<button class="velo-btn" onclick="openVeloModal()">Ajouter une sortie vélo</button>`;
+  html += `<button class="velo-btn" onclick="openVeloModal()">🚴 Ajouter une sortie vélo</button>`;
 
   document.getElementById('page-workout').innerHTML = html;
 
@@ -1543,21 +1495,21 @@ function onSetInput(exId, setIdx, kgKey, repsKey, isTopSet, rankKey) {
       }
     }
 
-    // Update back-off set placeholders dynamically using smart RPE model
+    // Update back-off set placeholders dynamically
     const topKg = parseFloat(state.current[kgKey]) || 0;
     const topReps = parseInt(state.current[repsKey]) || 0;
-    if (topKg > 0 && topReps > 0) {
-      const top1RM = calc1RM(topKg, topReps);
-      const targetReps = 7;
-      let baseBackoff = Math.round((top1RM / (1 + targetReps / 30)) / 2.5) * 2.5;
+    if (topKg > 0) {
+      const sugKg = (Math.round((topKg * 0.85) / 2.5) * 2.5).toFixed(1).replace('.0','');
+      const sugReps = topReps > 0 ? Math.min(topReps + 2, 8) : '';
+      // Find the exercise to know how many sets
       for (const day of PROGRAM) {
         for (const ex of day.exercises) {
           if (ex.id === exId) {
             for (let s = 1; s < ex.sets; s++) {
               const kgInput = document.querySelector(`input[oninput*="'${exId}_${s}_kg'"]`);
               const repsInput = document.querySelector(`input[oninput*="'${exId}_${s}_reps'"]`);
-              if (kgInput && !kgInput.value) kgInput.placeholder = baseBackoff;
-              if (repsInput && !repsInput.value) repsInput.placeholder = targetReps;
+              if (kgInput && !kgInput.value) kgInput.placeholder = sugKg;
+              if (repsInput && !repsInput.value && sugReps) repsInput.placeholder = sugReps;
             }
           }
         }
@@ -1573,35 +1525,6 @@ function onSetInput(exId, setIdx, kgKey, repsKey, isTopSet, rankKey) {
   if (!isTopSet && reps) {
     const nextRepsInput = document.querySelector(`input[oninput*="'${exId}_${setIdx+1}_reps'"]`);
     if (nextRepsInput && !nextRepsInput.value) nextRepsInput.placeholder = reps;
-  }
-
-  // After completing a back-off set → update remaining back-off placeholders adaptively
-  if (!isTopSet && kg && reps) {
-    // Check if this is a back-off set of a topSet exercise
-    for (const day of PROGRAM) {
-      for (const ex of day.exercises) {
-        if (ex.id === exId && ex.topSet && setIdx > 0) {
-          const doneKg = parseFloat(kg) || 0;
-          const doneReps = parseInt(reps) || 0;
-          if (doneKg > 0 && doneReps > 0) {
-            let nextKg;
-            if (doneReps < 5) nextKg = doneKg - 5;
-            else if (doneReps < 6) nextKg = doneKg - 2.5;
-            else nextKg = doneKg;
-            nextKg = Math.round(Math.max(nextKg, 20) / 2.5) * 2.5;
-            const nextReps = doneReps < 6 ? Math.min(doneReps + 1, 8) : 7;
-            // Update only the NEXT unfilled set
-            const nextS = setIdx + 1;
-            if (nextS < ex.sets) {
-              const nextKgInput = document.querySelector(`input[oninput*="'${exId}_${nextS}_kg'"]`);
-              const nextRepsInput = document.querySelector(`input[oninput*="'${exId}_${nextS}_reps'"]`);
-              if (nextKgInput && !nextKgInput.value) nextKgInput.placeholder = nextKg;
-              if (nextRepsInput && !nextRepsInput.value) nextRepsInput.placeholder = nextReps;
-            }
-          }
-        }
-      }
-    }
   }
 }
 
@@ -1711,10 +1634,7 @@ document.addEventListener('visibilitychange', () => {
 
 function finishSession(dayId) {
   const day = PROGRAM.find(d => d.id === dayId);
-  const durationMin = state._sessionActive && sessionStart > 0
-    ? Math.round((Date.now() - sessionStart) / 60000)
-    : 0;
-  const entry = { dayId, date: new Date().toISOString(), sets: {}, durationMin };
+  const entry = { dayId, date: new Date().toISOString(), sets: {} };
   let hasData = false;
 
   day.exercises.forEach(ex => {
@@ -2025,7 +1945,7 @@ function renderHistory() {
           <div style="display:flex;justify-content:space-between;align-items:center">
             <div>
               <div style="font-size:13px;font-weight:700;color:${d.accent}">${d.name} — ${d.subtitle}</div>
-              <div style="font-size:11px;color:var(--text3);margin-top:2px">${formatDate(h.date)}${h.durationMin ? ` · ⏱ ${h.durationMin} min` : ''}</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">${formatDate(h.date)}</div>
             </div>
             <div style="text-align:right">
               <div style="font-size:18px;font-weight:800;color:${d.accent}">${setCount}</div>
@@ -2611,15 +2531,6 @@ function shiftHeatmap(dir) {
   render();
 }
 
-// Helper: get local date key YYYY-MM-DD (avoids UTC shift bug)
-function localDateKey(date) {
-  const d = new Date(date);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-}
-
 function renderHeatmap() {
   const today = new Date();
   const weeksToShow = 12;
@@ -2628,26 +2539,23 @@ function renderHeatmap() {
 
   const sessionMap = {};
   state.history.forEach(h => {
-    const dateKey = localDateKey(h.date);
+    const dateKey = h.date.slice(0, 10);
     if (!sessionMap[dateKey]) sessionMap[dateKey] = { muscu: [], velo: false };
     sessionMap[dateKey].muscu.push(h.dayId);
   });
   if (state.veloSessions) {
     state.veloSessions.forEach(v => {
-      const dateKey = localDateKey(v.date);
+      const dateKey = v.date.slice(0, 10);
       if (!sessionMap[dateKey]) sessionMap[dateKey] = { muscu: [], velo: false };
       sessionMap[dateKey].velo = true;
     });
   }
 
-  // End date: end of the current week (Sunday), shifted by offset
+  // End date shifts by offset
   const endDate = new Date(today);
-  // Advance to the Sunday of the current week so today is always visible
-  const dayOfWeek = endDate.getDay(); // 0=Sun, 1=Mon, ...6=Sat
-  const daysToSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
-  endDate.setDate(endDate.getDate() + daysToSunday + heatmapOffset * weeksToShow * 7);
+  endDate.setDate(endDate.getDate() + heatmapOffset * weeksToShow * 7);
   const startDate = new Date(endDate);
-  startDate.setDate(startDate.getDate() - (weeksToShow * 7) + 1);
+  startDate.setDate(startDate.getDate() - (weeksToShow * 7) - startDate.getDay() + 1);
 
   const weeks = [];
   const monthLabels = [];
@@ -2659,7 +2567,7 @@ function renderHeatmap() {
     for (let d = 0; d < 7; d++) {
       const cellDate = new Date(startDate);
       cellDate.setDate(startDate.getDate() + w * 7 + d);
-      const key = localDateKey(cellDate);
+      const key = cellDate.toISOString().slice(0, 10);
       const data = sessionMap[key] || { muscu: [], velo: false };
       const isFuture = cellDate > today;
       week.push({ date: cellDate, key, ...data, isFuture });
@@ -2727,7 +2635,7 @@ function renderHeatmap() {
       } else if (cell.velo) {
         bg = veloColor;
       }
-      const isToday = cell.key === localDateKey(today);
+      const isToday = cell.key === today.toISOString().slice(0, 10);
       const todayBorder = isToday ? 'border:1.5px solid #fff;' : '';
       html += `<div class="heatmap-cell" style="background:${bg};${border}${todayBorder}"></div>`;
     });
