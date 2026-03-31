@@ -221,7 +221,7 @@
   .rank-img { width: 24px; height: 24px; vertical-align: middle; }
   .rank-badge .rank-img { width: 22px; height: 22px; }
   .rank-card .rank-badge .rank-img { width: 28px; height: 28px; }
-  .overall-rank .rank-icon .rank-img { width: 136px; height: 136px; }
+  .overall-rank .rank-icon .rank-img { width: 96px; height: 96px; }
   .live-1rm .rank-img { width: 16px; height: 16px; }
 
   .overall-rank {
@@ -1912,20 +1912,23 @@ function updateBody(idx, key, val) {
 
 // ---- HISTORY ----
 function renderHistory() {
-  let html = '<h2 class="page-title">Historique des séances</h2>';
+  let html = '<h2 class="page-title">Historique</h2>';
 
-  // Merge muscu and velo into a unified timeline
+  // Merge muscu, velo and body stats into a unified timeline
   const allEntries = [];
   state.history.forEach((h, i) => allEntries.push({ type: 'muscu', data: h, idx: i }));
   if (state.veloSessions) {
     state.veloSessions.forEach((v, i) => allEntries.push({ type: 'velo', data: v, idx: i }));
+  }
+  if (state.bodyStats) {
+    state.bodyStats.forEach((b, i) => allEntries.push({ type: 'body', data: b, idx: i }));
   }
   allEntries.sort((a, b) => new Date(b.data.date) - new Date(a.data.date));
 
   if (!allEntries.length) {
     html += `<div class="card" style="text-align:center;padding:24px">
       <div style="font-size:32px;margin-bottom:8px">📝</div>
-      <div style="font-size:13px;color:var(--text3)">Aucune séance enregistrée</div>
+      <div style="font-size:13px;color:var(--text3)">Aucune activité enregistrée</div>
       <div style="font-size:11px;color:#444;margin-top:4px">Termine ta première séance pour la voir ici</div>
     </div>`;
     html += `<button class="btn-import" onclick="openImportModal()">📥 Charger depuis Excel</button>`;
@@ -1965,8 +1968,7 @@ function renderHistory() {
             <button class="hist-btn hist-btn-del" onclick="deleteSession(${i})">🗑 Supprimer</button>
           </div>
         </div>`;
-      } else {
-        // Vélo session
+      } else if (entry.type === 'velo') {
         const v = entry.data;
         const vi = entry.idx;
         const typeLabels = { endurance: '🛣️ Endurance', long: '🏔️ Sortie longue', recup: '🌿 Récup' };
@@ -1983,6 +1985,30 @@ function renderHistory() {
           </div>
           <div class="hist-actions">
             <button class="hist-btn hist-btn-del" onclick="deleteVeloSession(${vi})">🗑 Supprimer</button>
+          </div>
+        </div>`;
+      } else if (entry.type === 'body') {
+        const b = entry.data;
+        const bi = entry.idx;
+        const vals = [];
+        if (b.poids) vals.push(`${b.poids}kg`);
+        if (b.bras) vals.push(`bras ${b.bras}cm`);
+        if (b.poitrine) vals.push(`poit. ${b.poitrine}cm`);
+        if (b.taille_cm) vals.push(`taille ${b.taille_cm}cm`);
+        html += `<div class="card hist-card" style="--hist-accent:var(--purple)">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-size:13px;font-weight:700;color:var(--purple)">📏 Mesure corporelle</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">${formatDate(b.date)}</div>
+            </div>
+            <div style="text-align:right">
+              ${b.poids ? `<div style="font-size:18px;font-weight:800;color:var(--purple)">${b.poids}<span style="font-size:11px;font-weight:600">kg</span></div>` : ''}
+            </div>
+          </div>
+          ${vals.length ? `<div class="hist-tags">${vals.map(v => `<span class="hist-tag">${v}</span>`).join('')}</div>` : ''}
+          <div class="hist-actions">
+            <button class="hist-btn hist-btn-edit" onclick="openEditBodyStat(${bi})">✏️ Modifier</button>
+            <button class="hist-btn hist-btn-del" onclick="deleteBodyStat(${bi})">🗑 Supprimer</button>
           </div>
         </div>`;
       }
@@ -2033,6 +2059,7 @@ function openEditSession(idx) {
   });
 
   document.getElementById('edit-modal-body').innerHTML = body;
+  document.getElementById('edit-modal-save').setAttribute('onclick', 'saveEditSession()');
   document.getElementById('edit-modal').classList.remove('hidden');
 }
 
@@ -2056,6 +2083,7 @@ function saveEditSession() {
 function closeEditModal() {
   document.getElementById('edit-modal').classList.add('hidden');
   editingIdx = null;
+  editingBodyIdx = null;
   editSets = {};
 }
 
@@ -2078,6 +2106,59 @@ function deleteVeloSession(idx) {
     state.veloSessions.splice(idx, 1);
     saveState();
     showToast('Sortie vélo supprimée');
+    render();
+  }
+}
+
+// ---- BODY STAT EDIT/DELETE FROM HISTORY ----
+let editingBodyIdx = null;
+
+function openEditBodyStat(idx) {
+  editingBodyIdx = idx;
+  const b = state.bodyStats[idx];
+  if (!b) return;
+
+  document.getElementById('edit-modal-title').textContent = `Modifier — Mesure du ${formatDate(b.date)}`;
+
+  let body = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div class="stat-field"><label>Poids (kg)</label>
+      <input type="number" inputmode="decimal" id="edit-body-poids" value="${b.poids||''}" placeholder="—"></div>
+    <div class="stat-field"><label>Tour de bras (cm)</label>
+      <input type="number" inputmode="decimal" id="edit-body-bras" value="${b.bras||''}" placeholder="—"></div>
+    <div class="stat-field"><label>Poitrine (cm)</label>
+      <input type="number" inputmode="decimal" id="edit-body-poitrine" value="${b.poitrine||''}" placeholder="—"></div>
+    <div class="stat-field"><label>Tour de taille (cm)</label>
+      <input type="number" inputmode="decimal" id="edit-body-taille" value="${b.taille_cm||''}" placeholder="—"></div>
+  </div>`;
+
+  document.getElementById('edit-modal-body').innerHTML = body;
+  document.getElementById('edit-modal-save').setAttribute('onclick', 'saveEditBodyStat()');
+  document.getElementById('edit-modal').classList.remove('hidden');
+}
+
+function saveEditBodyStat() {
+  if (editingBodyIdx === null) return;
+  state.bodyStats[editingBodyIdx].poids = document.getElementById('edit-body-poids').value;
+  state.bodyStats[editingBodyIdx].bras = document.getElementById('edit-body-bras').value;
+  state.bodyStats[editingBodyIdx].poitrine = document.getElementById('edit-body-poitrine').value;
+  state.bodyStats[editingBodyIdx].taille_cm = document.getElementById('edit-body-taille').value;
+  if (state.bodyStats[editingBodyIdx].poids) {
+    state.bodyWeight = parseFloat(state.bodyStats[editingBodyIdx].poids);
+  }
+  editingBodyIdx = null;
+  saveState();
+  closeEditModal();
+  showToast('Mesure modifiée ✓');
+  render();
+}
+
+function deleteBodyStat(idx) {
+  const b = state.bodyStats[idx];
+  const label = b ? `mesure du ${formatDate(b.date)}` : 'cette mesure';
+  if (confirm(`Supprimer ${label} ?`)) {
+    state.bodyStats.splice(idx, 1);
+    saveState();
+    showToast('Mesure supprimée');
     render();
   }
 }
@@ -2330,9 +2411,10 @@ function closeInfoModal() {
 
 
 function resetHistory() {
-  if (confirm('Supprimer tout l\'historique (muscu + vélo) ? Cette action est irréversible.')) {
+  if (confirm('Supprimer tout l\'historique (muscu, vélo et mesures) ? Cette action est irréversible.')) {
     state.history = [];
     state.veloSessions = [];
+    state.bodyStats = [];
     saveState(); showToast('Historique supprimé'); render();
   }
 }
@@ -2555,8 +2637,15 @@ function renderHeatmap() {
   // End date shifts by offset
   const endDate = new Date(today);
   endDate.setDate(endDate.getDate() + heatmapOffset * weeksToShow * 7);
-  const startDate = new Date(endDate);
-  startDate.setDate(startDate.getDate() - (weeksToShow * 7) - startDate.getDay() + 1);
+
+  // Find Monday of the week containing endDate
+  const endDow = endDate.getDay() || 7; // Sunday=7
+  const endMonday = new Date(endDate);
+  endMonday.setDate(endDate.getDate() - endDow + 1);
+
+  // Start from (weeksToShow - 1) weeks before that Monday
+  const startDate = new Date(endMonday);
+  startDate.setDate(endMonday.getDate() - (weeksToShow - 1) * 7);
 
   const weeks = [];
   const monthLabels = [];
