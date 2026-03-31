@@ -255,16 +255,8 @@
   }
 
   /* CHART */
-  .chart-container { position: relative; height: 80px; display: flex; align-items: flex-end; gap: 3px; margin: 8px 0; }
-  .chart-bar {
-    flex: 1; border-radius: 3px 3px 0 0; min-height: 4px; transition: height 0.4s;
-    position: relative;
-  }
-  .chart-bar .chart-val {
-    position: absolute; top: -16px; left: 50%; transform: translateX(-50%);
-    font-size: 9px; color: var(--text2); white-space: nowrap;
-  }
-  .chart-labels { display: flex; gap: 3px; }
+  .chart-svg { width: 100%; overflow: visible; }
+  .chart-labels { display: flex; margin-top: 4px; }
   .chart-labels span { flex: 1; text-align: center; font-size: 8px; color: var(--text3); }
 
   .info-text { font-size: 12px; color: var(--text3); line-height: 1.6; }
@@ -1794,7 +1786,6 @@ function renderProgress() {
 
   topExercises.forEach(ex => {
     const data = getTopSetHistory(ex.id);
-    const maxKg = data.length ? Math.max(...data.map(d=>d.kg)) : 0;
 
     html += `<div class="card" style="margin-bottom:10px">
       <div style="font-size:13px;font-weight:700;color:${ex.accent};margin-bottom:8px">${ex.name}</div>`;
@@ -1802,14 +1793,80 @@ function renderProgress() {
     if (!data.length) {
       html += '<div style="font-size:12px;color:var(--text3);padding:8px 0">Aucune donnée encore</div>';
     } else {
-      // Chart
-      html += '<div class="chart-container">';
-      data.forEach(d => {
-        const h = maxKg > 0 ? Math.max((d.kg/maxKg)*65, 4) : 4;
-        html += `<div class="chart-bar" style="height:${h}px;background:linear-gradient(to top,${ex.accent},${ex.accent}80)">
-          <span class="chart-val">${d.kg}</span></div>`;
+      const chartH = 90;
+      const chartW = 320;
+      const padX = 8;
+      const padTop = 18;
+      const padBot = 4;
+      const minKg = Math.min(...data.map(d=>d.kg));
+      const maxKgVal = Math.max(...data.map(d=>d.kg));
+      const range = maxKgVal - minKg || 1;
+      const usableH = chartH - padTop - padBot;
+      const usableW = chartW - padX * 2;
+
+      const points = data.map((d, i) => {
+        const x = data.length === 1 ? chartW / 2 : padX + (i / (data.length - 1)) * usableW;
+        const y = padTop + usableH - ((d.kg - minKg) / range) * usableH;
+        return { x, y, kg: d.kg, reps: d.reps };
       });
-      html += '</div><div class="chart-labels">';
+
+      // Build path
+      let linePath = '';
+      let areaPath = '';
+      if (points.length === 1) {
+        linePath = '';
+        areaPath = '';
+      } else {
+        // Smooth curve using cardinal spline
+        linePath = `M${points[0].x},${points[0].y}`;
+        areaPath = `M${points[0].x},${chartH - padBot}L${points[0].x},${points[0].y}`;
+        for (let i = 1; i < points.length; i++) {
+          linePath += `L${points[i].x},${points[i].y}`;
+          areaPath += `L${points[i].x},${points[i].y}`;
+        }
+        areaPath += `L${points[points.length-1].x},${chartH - padBot}Z`;
+      }
+
+      html += `<svg class="chart-svg" viewBox="0 0 ${chartW} ${chartH}" preserveAspectRatio="none" style="height:${chartH}px">
+        <defs>
+          <linearGradient id="grad-${ex.id}" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="${ex.accent}" stop-opacity="0.25"/>
+            <stop offset="100%" stop-color="${ex.accent}" stop-opacity="0"/>
+          </linearGradient>
+        </defs>`;
+
+      // Grid lines
+      for (let g = 0; g <= 3; g++) {
+        const gy = padTop + (usableH / 3) * g;
+        html += `<line x1="${padX}" y1="${gy}" x2="${chartW - padX}" y2="${gy}" stroke="var(--border)" stroke-width="0.5"/>`;
+      }
+
+      // Area fill
+      if (points.length > 1) {
+        html += `<path d="${areaPath}" fill="url(#grad-${ex.id})"/>`;
+        // Line
+        html += `<path d="${linePath}" fill="none" stroke="${ex.accent}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+      }
+
+      // Points and labels
+      points.forEach((p, i) => {
+        const isLast = i === points.length - 1;
+        const isFirst = i === 0;
+        const r = isLast ? 5 : 3.5;
+        // Outer glow on last point
+        if (isLast) {
+          html += `<circle cx="${p.x}" cy="${p.y}" r="8" fill="${ex.accent}" opacity="0.15"/>`;
+        }
+        html += `<circle cx="${p.x}" cy="${p.y}" r="${r}" fill="${isLast ? ex.accent : 'var(--card)'}" stroke="${ex.accent}" stroke-width="2"/>`;
+        // Value label
+        const labelY = p.y - 10;
+        html += `<text x="${p.x}" y="${labelY < 12 ? p.y + 16 : labelY}" text-anchor="middle" fill="${isLast ? ex.accent : 'var(--text3)'}" font-size="${isLast ? 11 : 9}" font-weight="${isLast ? 700 : 500}" font-family="Space Grotesk,system-ui">${p.kg}</text>`;
+      });
+
+      html += '</svg>';
+
+      // Date labels
+      html += '<div class="chart-labels">';
       data.forEach(d => { html += `<span>${d.date}</span>`; });
       html += '</div>';
 
