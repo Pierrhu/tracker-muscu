@@ -98,10 +98,81 @@
   .nav button.active span.icon img { opacity: 1; }
   .nav button span.label { font-size: 9px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
 
-  /* PAGE */
-  .page { padding: 16px 14px; display: none; }
-  .page.active { display: block; }
+  /* PAGE — animated transitions */
+  .page { padding: 16px 14px; display: none; opacity: 0; transform: translateY(8px); }
+  .page.active { display: block; animation: pageIn 0.3s ease forwards; }
+  @keyframes pageIn { to { opacity: 1; transform: translateY(0); } }
   .page-title { font-size: 18px; font-weight: 800; color: #EDEDF0; margin-bottom: 14px; letter-spacing: -0.3px; }
+
+  /* EXERCISE SLIDE ANIMATION */
+  .sets-area {
+    margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px;
+    animation: setsSlide 0.25s ease;
+  }
+  @keyframes setsSlide {
+    from { opacity: 0; max-height: 0; transform: translateY(-8px); }
+    to { opacity: 1; max-height: 500px; transform: translateY(0); }
+  }
+
+  /* PROGRESS RING */
+  .progress-ring-wrap { position: relative; width: 140px; height: 140px; margin: 0 auto 12px; }
+  .progress-ring { transform: rotate(-90deg); }
+  .progress-ring-bg { fill: none; stroke: var(--border); stroke-width: 6; }
+  .progress-ring-fill { fill: none; stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 0.8s cubic-bezier(.34,1.56,.64,1); }
+  .progress-ring-center {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+
+  /* FINISH BUTTON ANIMATION */
+  .btn-primary { position: relative; overflow: hidden; }
+  .btn-primary.success { animation: btnSuccess 0.5s ease; }
+  @keyframes btnSuccess {
+    0% { transform: scale(1); }
+    30% { transform: scale(0.95); }
+    60% { transform: scale(1.03); }
+    100% { transform: scale(1); }
+  }
+
+  /* INPUT FLASH */
+  .input-flash { animation: inputFlash 0.4s ease; }
+  @keyframes inputFlash {
+    0% { box-shadow: none; }
+    50% { box-shadow: 0 0 0 2px var(--ex-accent, var(--blue)); }
+    100% { box-shadow: none; }
+  }
+
+  /* PR SHIMMER */
+  .pr-banner { position: relative; overflow: hidden; }
+  .pr-banner::after {
+    content: ''; position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,215,0,0.08), transparent);
+    animation: shimmer 3s infinite;
+  }
+  @keyframes shimmer { 0% { left: -100%; } 100% { left: 200%; } }
+
+  /* WEEKLY RECAP */
+  .recap-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 280;
+    display: flex; align-items: center; justify-content: center;
+    animation: fadeIn 0.2s ease;
+  }
+  .recap-overlay.hidden { display: none; }
+  .recap-box {
+    background: var(--card); border-radius: 20px; padding: 24px 20px;
+    width: 90%; max-width: 360px; border: 1px solid var(--border);
+    animation: slideUp 0.35s cubic-bezier(.34,1.56,.64,1);
+    text-align: center;
+  }
+  .recap-title { font-size: 18px; font-weight: 800; color: #EDEDF0; margin-bottom: 4px; }
+  .recap-sub { font-size: 12px; color: var(--text3); margin-bottom: 16px; }
+  .recap-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+  .recap-stat {
+    padding: 12px; border-radius: 10px; background: var(--card2);
+    border: 1px solid var(--border);
+  }
+  .recap-stat-val { font-size: 24px; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+  .recap-stat-label { font-size: 10px; color: var(--text3); font-weight: 600; }
 
   /* CARDS */
   .card {
@@ -225,7 +296,7 @@
   .live-1rm .rank-img { width: 16px; height: 16px; }
 
   .overall-rank {
-    text-align: center; padding: 28px 16px; margin-bottom: 16px;
+    text-align: center; padding: 24px 16px; margin-bottom: 16px;
     background: var(--card); border-radius: 16px; border: 1px solid var(--border);
     position: relative; overflow: hidden;
   }
@@ -233,7 +304,7 @@
     content: ''; position: absolute; inset: 0; border-radius: 16px;
     border: 2px solid var(--rc); opacity: 0.3;
   }
-  .overall-rank .rank-icon { font-size: 48px; margin-bottom: 12px; }
+  .overall-rank .rank-icon { margin-bottom: 0; }
   .overall-rank .rank-name { font-size: 26px; font-weight: 800; letter-spacing: 1px; }
   .overall-rank .rank-sub { font-size: 12px; color: var(--text3); margin-top: 4px; }
 
@@ -628,6 +699,11 @@
     <button class="btn-primary" id="import-confirm-btn" style="background:var(--blue);display:none" onclick="confirmImport()">Importer les séances ✓</button>
     <button class="modal-cancel" onclick="closeImportModal()">Annuler</button>
   </div>
+</div>
+
+<!-- WEEKLY RECAP -->
+<div class="recap-overlay hidden" id="recap-overlay" onclick="closeRecap()">
+  <div class="recap-box" onclick="event.stopPropagation()" id="recap-box"></div>
 </div>
 
 <!-- SESSION TIMER BAR -->
@@ -1466,6 +1542,12 @@ function onSetInput(exId, setIdx, kgKey, repsKey, isTopSet, rankKey) {
   if (kg && reps && parseFloat(kg) > 0 && parseInt(reps) > 0) {
     const duration = getRestDuration(exId);
     startRestTimer(duration, exId);
+    // Input flash micro-interaction
+    document.querySelectorAll(`input[oninput*="'${kgKey}'"], input[oninput*="'${repsKey}'"]`).forEach(inp => {
+      inp.classList.remove('input-flash');
+      void inp.offsetWidth; // force reflow
+      inp.classList.add('input-flash');
+    });
   }
 
   // Live 1RM update (without re-render to keep focus)
@@ -1669,6 +1751,11 @@ function finishSession(dayId) {
   } else {
     showToast('Séance enregistrée ! 💪');
   }
+  // Button success animation
+  document.querySelectorAll('.btn-primary').forEach(btn => {
+    btn.classList.add('success');
+    setTimeout(() => btn.classList.remove('success'), 600);
+  });
   render();
 }
 
@@ -1719,16 +1806,49 @@ function renderRank() {
   const overallIdx = rankCount > 0 ? Math.floor(totalRankIdx / rankCount) : -1;
   const overallRank = overallIdx >= 0 ? RANKS[overallIdx] : null;
 
+  // Calculate overall progress to next rank
+  let overallProgress = 0;
+  if (rankCount > 0) {
+    let totalProg = 0;
+    Object.keys(STANDARDS).forEach(key => {
+      const std = STANDARDS[key];
+      const best = getBest1RM(key);
+      const ratio = bw > 0 ? best / bw : 0;
+      const rIdx = getRankIdx(ratio, std.thresholds);
+      totalProg += getProgressInRank(ratio, std.thresholds, rIdx);
+    });
+    overallProgress = totalProg / Object.keys(STANDARDS).length;
+  }
+
+  const ringR = 58;
+  const ringCirc = 2 * Math.PI * ringR;
+  const ringOffset = ringCirc * (1 - Math.min(overallProgress, 1));
+
   if (overallRank) {
     const overallHtml = `<div class="overall-rank ${overallRank.cls}">
-      <div class="rank-icon">${overallRank.icon}</div>
+      <div class="progress-ring-wrap">
+        <svg class="progress-ring" width="140" height="140" viewBox="0 0 140 140">
+          <circle class="progress-ring-bg" cx="70" cy="70" r="${ringR}"/>
+          <circle class="progress-ring-fill" cx="70" cy="70" r="${ringR}" stroke="var(--rc)" stroke-dasharray="${ringCirc}" stroke-dashoffset="${ringOffset}"/>
+        </svg>
+        <div class="progress-ring-center">
+          <div class="rank-icon">${overallRank.icon}</div>
+        </div>
+      </div>
       <div class="rank-name" style="color:var(--rc)">${overallRank.name}</div>
-      <div class="rank-sub">Rang global — moyenne de tes 3 lifts</div>
+      <div class="rank-sub">Rang global · ${Math.round(overallProgress * 100)}% vers le suivant</div>
     </div>`;
     html = overallHtml + html;
   } else {
     html = `<div class="overall-rank rank-bronze">
-      <div class="rank-icon">🎯</div>
+      <div class="progress-ring-wrap">
+        <svg class="progress-ring" width="140" height="140" viewBox="0 0 140 140">
+          <circle class="progress-ring-bg" cx="70" cy="70" r="${ringR}"/>
+        </svg>
+        <div class="progress-ring-center">
+          <div class="rank-icon">🎯</div>
+        </div>
+      </div>
       <div class="rank-name" style="color:var(--text3)">Non classé</div>
       <div class="rank-sub">Termine quelques séances pour débloquer ton rang</div>
     </div>` + html;
@@ -2882,10 +3002,92 @@ function renderHeatmap() {
 }
 
 
+// ---- WEEKLY RECAP ----
+function checkWeeklyRecap() {
+  const now = new Date();
+  const dayOfWeek = now.getDay(); // 0=Sun, 1=Mon
+  if (dayOfWeek !== 1) return; // Only show on Monday
+
+  const lastRecapKey = 'lastRecapShown';
+  const thisMonday = getWeekKey(now);
+  try {
+    const lastShown = localStorage.getItem(lastRecapKey);
+    if (lastShown === thisMonday) return; // Already shown this week
+    localStorage.setItem(lastRecapKey, thisMonday);
+  } catch(e) {}
+
+  // Calculate last week stats
+  const lastWeekStart = new Date(now);
+  lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+  const lastWeekKey = getWeekKey(lastWeekStart);
+
+  const weekSessions = state.history.filter(h => getWeekKey(h.date) === lastWeekKey);
+  const weekVelo = (state.veloSessions||[]).filter(v => getWeekKey(v.date) === lastWeekKey);
+
+  if (!weekSessions.length && !weekVelo.length) return; // No activity last week
+
+  // Calculate total kg lifted
+  let totalKg = 0;
+  weekSessions.forEach(h => {
+    Object.values(h.sets).forEach(s => {
+      const kg = parseFloat(s.kg) || 0;
+      const reps = parseInt(s.reps) || 0;
+      totalKg += kg * reps;
+    });
+  });
+
+  const veloKm = weekVelo.reduce((a,v) => a + (v.distance||0), 0);
+
+  // Count PRs from last week
+  let prCount = 0;
+  weekSessions.forEach(h => {
+    const idx = state.history.indexOf(h);
+    const day = PROGRAM.find(d => d.id === h.dayId);
+    if (day && idx > 0) {
+      const prs = detectPRs(h, day);
+      prCount += prs.length;
+    }
+  });
+
+  // Build recap
+  let recapHtml = `<div class="recap-title">📊 Recap de la semaine</div>
+    <div class="recap-sub">Semaine du ${lastWeekStart.toLocaleDateString('fr-FR',{day:'2-digit',month:'long'})}</div>
+    <div class="recap-stats">
+      <div class="recap-stat">
+        <div class="recap-stat-val" style="color:var(--red)">${weekSessions.length}</div>
+        <div class="recap-stat-label">Séances muscu</div>
+      </div>
+      <div class="recap-stat">
+        <div class="recap-stat-val" style="color:var(--yellow)">${veloKm > 0 ? veloKm.toFixed(0) + 'km' : weekVelo.length}</div>
+        <div class="recap-stat-label">${veloKm > 0 ? 'km vélo' : 'Sorties vélo'}</div>
+      </div>
+      <div class="recap-stat">
+        <div class="recap-stat-val" style="color:var(--blue)">${totalKg > 1000 ? (totalKg/1000).toFixed(1)+'t' : totalKg.toFixed(0)+'kg'}</div>
+        <div class="recap-stat-label">Volume total</div>
+      </div>
+      <div class="recap-stat">
+        <div class="recap-stat-val" style="color:${prCount > 0 ? 'var(--green)' : 'var(--text3)'}">${prCount}</div>
+        <div class="recap-stat-label">PRs battus</div>
+      </div>
+    </div>
+    <button class="btn-primary" style="background:var(--purple);margin-top:0" onclick="closeRecap()">C'est parti pour cette semaine 💪</button>`;
+
+  document.getElementById('recap-box').innerHTML = recapHtml;
+  document.getElementById('recap-overlay').classList.remove('hidden');
+}
+
+function closeRecap() {
+  document.getElementById('recap-overlay').classList.add('hidden');
+}
+
+
 // ============ INIT ============
 (async () => {
   await loadState();
   render();
+  
+  // Weekly recap on Monday
+  setTimeout(() => checkWeeklyRecap(), 500);
 
   // Demander le stockage persistant (Android Chrome)
   if (navigator.storage && navigator.storage.persist) {
