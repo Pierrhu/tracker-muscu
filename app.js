@@ -860,8 +860,113 @@ function updateWeight(val) {
 }
 
 // ---- PROGRESS ----
+let progressDayIdx = 0;
+
+function selectProgressDay(i) { progressDayIdx = i; renderProgress(); document.getElementById('page-progress').classList.add('active'); }
+
+function getExerciseHistory(exId, sets) {
+  const results = [];
+  state.history.forEach(h => {
+    let bestKg = 0, bestReps = 0, best1RM = 0, totalVol = 0, hasData = false;
+    for (let s = 0; s < sets; s++) {
+      const set = h.sets[`${exId}_${s}`];
+      if (!set) continue;
+      hasData = true;
+      const kg = parseFloat(set.kg) || 0;
+      const reps = parseInt(set.reps) || 0;
+      totalVol += kg * reps;
+      const rm = calc1RM(kg, reps);
+      if (rm > best1RM) { best1RM = rm; bestKg = kg; bestReps = reps; }
+    }
+    if (hasData) {
+      results.push({
+        date: new Date(h.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }),
+        bestKg, bestReps, best1RM, totalVol
+      });
+    }
+  });
+  return results.slice(-12);
+}
+
+function renderLineChart(data, valueKey, color, gradId, unit) {
+  if (!data.length) return '<div style="font-size:12px;color:var(--text3);padding:8px 0">Aucune donnée</div>';
+  const vals = data.map(d => d[valueKey]);
+  const chartH = 85, chartW = 320, padX = 8, padTop = 18, padBot = 4;
+  const minV = Math.min(...vals), maxV = Math.max(...vals);
+  const range = maxV - minV || 1;
+  const usableH = chartH - padTop - padBot, usableW = chartW - padX * 2;
+
+  const points = data.map((d, i) => ({
+    x: data.length === 1 ? chartW / 2 : padX + (i / (data.length - 1)) * usableW,
+    y: padTop + usableH - ((d[valueKey] - minV) / range) * usableH,
+    v: d[valueKey]
+  }));
+
+  let linePath = '', areaPath = '';
+  if (points.length > 1) {
+    linePath = `M${points[0].x},${points[0].y}`;
+    areaPath = `M${points[0].x},${chartH - padBot}L${points[0].x},${points[0].y}`;
+    for (let i = 1; i < points.length; i++) {
+      linePath += `L${points[i].x},${points[i].y}`;
+      areaPath += `L${points[i].x},${points[i].y}`;
+    }
+    areaPath += `L${points[points.length - 1].x},${chartH - padBot}Z`;
+  }
+
+  let svg = `<svg class="chart-svg" viewBox="0 0 ${chartW} ${chartH}" preserveAspectRatio="none" style="height:${chartH}px">
+    <defs><linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${color}" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+    </linearGradient></defs>`;
+
+  for (let g = 0; g <= 3; g++) {
+    const gy = padTop + (usableH / 3) * g;
+    svg += `<line x1="${padX}" y1="${gy}" x2="${chartW - padX}" y2="${gy}" stroke="var(--border)" stroke-width="0.5"/>`;
+  }
+
+  if (points.length > 1) {
+    svg += `<path d="${areaPath}" fill="url(#${gradId})"/>`;
+    svg += `<path d="${linePath}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+  }
+
+  points.forEach((p, i) => {
+    const isLast = i === points.length - 1;
+    if (isLast) svg += `<circle cx="${p.x}" cy="${p.y}" r="8" fill="${color}" opacity="0.15"/>`;
+    svg += `<circle cx="${p.x}" cy="${p.y}" r="${isLast ? 5 : 3.5}" fill="${isLast ? color : 'var(--card)'}" stroke="${color}" stroke-width="2"/>`;
+    const ly = p.y - 10 < 12 ? p.y + 16 : p.y - 10;
+    const label = unit === 'kg' ? Math.round(p.v * 10) / 10 : Math.round(p.v);
+    svg += `<text x="${p.x}" y="${ly}" text-anchor="middle" fill="${isLast ? color : 'var(--text3)'}" font-size="${isLast ? 11 : 9}" font-weight="${isLast ? 700 : 500}" font-family="Space Grotesk,system-ui">${label}</text>`;
+  });
+
+  svg += '</svg>';
+  svg += '<div class="chart-labels">';
+  data.forEach(d => { svg += `<span>${d.date}</span>`; });
+  svg += '</div>';
+
+  if (data.length > 1) {
+    const diff = vals[vals.length - 1] - vals[0];
+    const col = diff >= 0 ? 'var(--green)' : 'var(--red)';
+    svg += `<div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px">
+      <span style="color:var(--text3)">Départ: <strong style="color:var(--text2)">${vals[0].toFixed(1)}</strong></span>
+      <span style="color:var(--text3)">Actuel: <strong style="color:${color}">${vals[vals.length - 1].toFixed(1)}</strong></span>
+      <span style="color:${col};font-weight:700">${diff >= 0 ? '+' : ''}${diff.toFixed(1)}</span>
+    </div>`;
+  }
+
+  return svg;
+}
+
+// ---- PROGRESS ACCORDION STATE ----
+let progressAccordion = null; // null = all closed
+
+function toggleProgressAccordion(dayId) {
+  progressAccordion = progressAccordion === dayId ? null : dayId;
+  renderProgress();
+  document.getElementById('page-progress').classList.add('active');
+}
+
 function renderProgress() {
-  let html = '<h2 class="page-title">Progression des top sets</h2>';
+  let html = '';
 
   // Streak card
   const streak = computeStreak();
@@ -870,127 +975,125 @@ function renderProgress() {
   html += `<div class="card" style="margin-bottom:14px;display:flex;align-items:center;gap:14px">
     <div style="font-size:40px;font-weight:800;color:${streakColor};line-height:1">${streak}</div>
     <div>
-      <div style="font-size:13px;font-weight:700;color:var(--text)">${flames} Semaine${streak!==1?'s':''} de streak</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:2px">${streak===0?'Commence ta première séance !':streak===1?'Premier pas, continue !':'Belle régularité, continue !'}</div>
+      <div style="font-size:13px;font-weight:700;color:var(--text)">${flames} Semaine${streak !== 1 ? 's' : ''} de streak</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px">${streak === 0 ? 'Commence ta première séance !' : streak === 1 ? 'Premier pas, continue !' : 'Belle régularité, continue !'}</div>
     </div>
   </div>`;
 
-  // ---- HEATMAP CALENDAR ----
+  // Heatmap
   html += renderHeatmap();
 
-  const topExercises = PROGRAM.flatMap(d => d.exercises.filter(e => e.topSet).map(e => ({...e, accent: d.accent})));
+  // ---- 3 BIG LIFTS TRACKER ----
+  const bigLifts = [
+    { key: 'bench', exId: 'a1', name: 'Bench', color: 'var(--red)' },
+    { key: 'row',   exId: 'a2', name: 'Row',   color: 'var(--blue)' },
+    { key: 'ohp',   exId: 'b1', name: 'OHP',   color: 'var(--yellow)' },
+  ];
 
-  topExercises.forEach(ex => {
-    const data = getTopSetHistory(ex.id);
+  html += `<div class="card" style="margin-bottom:14px">
+    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px">3 gros exercices — Meilleur 1RM</div>
+    <div style="display:flex;gap:6px">`;
 
-    html += `<div class="card" style="margin-bottom:10px">
-      <div style="font-size:13px;font-weight:700;color:${ex.accent};margin-bottom:8px">${ex.name}</div>`;
+  bigLifts.forEach(lift => {
+    const best1RM = getBest1RM(lift.key);
+    const bw = state.bodyWeight || 95;
+    const ratio = best1RM / bw;
+    const rkIdx = best1RM > 0 ? getRankIdx(ratio, STANDARDS[lift.key].thresholds) : -1;
+    const rkObj = rkIdx >= 0 ? RANKS[rkIdx] : null;
 
-    if (!data.length) {
-      html += '<div style="font-size:12px;color:var(--text3);padding:8px 0">Aucune donnée encore</div>';
-    } else {
-      const chartH = 90;
-      const chartW = 320;
-      const padX = 8;
-      const padTop = 18;
-      const padBot = 4;
-      const minKg = Math.min(...data.map(d=>d.kg));
-      const maxKgVal = Math.max(...data.map(d=>d.kg));
-      const range = maxKgVal - minKg || 1;
-      const usableH = chartH - padTop - padBot;
-      const usableW = chartW - padX * 2;
-
-      const points = data.map((d, i) => {
-        const x = data.length === 1 ? chartW / 2 : padX + (i / (data.length - 1)) * usableW;
-        const y = padTop + usableH - ((d.kg - minKg) / range) * usableH;
-        return { x, y, kg: d.kg, reps: d.reps };
-      });
-
-      // Build path
-      let linePath = '';
-      let areaPath = '';
-      if (points.length === 1) {
-        linePath = '';
-        areaPath = '';
-      } else {
-        // Smooth curve using cardinal spline
-        linePath = `M${points[0].x},${points[0].y}`;
-        areaPath = `M${points[0].x},${chartH - padBot}L${points[0].x},${points[0].y}`;
-        for (let i = 1; i < points.length; i++) {
-          linePath += `L${points[i].x},${points[i].y}`;
-          areaPath += `L${points[i].x},${points[i].y}`;
-        }
-        areaPath += `L${points[points.length-1].x},${chartH - padBot}Z`;
+    // Recent trend: last 2 sessions with this exercise
+    const history = [];
+    state.history.forEach(h => {
+      const s = h.sets[`${lift.exId}_0`];
+      if (s) {
+        const kg = parseFloat(s.kg)||0;
+        const reps = parseInt(s.reps)||0;
+        if (kg > 0 && reps > 0) history.push(calc1RM(kg, reps));
       }
+    });
+    const trend = history.length >= 2
+      ? (history[history.length-1] - history[history.length-2])
+      : null;
+    const trendHtml = trend !== null
+      ? `<div style="font-size:10px;font-weight:700;color:${trend >= 0 ? 'var(--green)' : 'var(--red)'};margin-top:1px">${trend >= 0 ? '+' : ''}${trend.toFixed(1)}kg</div>`
+      : '';
 
-      html += `<svg class="chart-svg" viewBox="0 0 ${chartW} ${chartH}" preserveAspectRatio="none" style="height:${chartH}px">
-        <defs>
-          <linearGradient id="grad-${ex.id}" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="${ex.accent}" stop-opacity="0.25"/>
-            <stop offset="100%" stop-color="${ex.accent}" stop-opacity="0"/>
-          </linearGradient>
-        </defs>`;
-
-      // Grid lines
-      for (let g = 0; g <= 3; g++) {
-        const gy = padTop + (usableH / 3) * g;
-        html += `<line x1="${padX}" y1="${gy}" x2="${chartW - padX}" y2="${gy}" stroke="var(--border)" stroke-width="0.5"/>`;
-      }
-
-      // Area fill
-      if (points.length > 1) {
-        html += `<path d="${areaPath}" fill="url(#grad-${ex.id})"/>`;
-        // Line
-        html += `<path d="${linePath}" fill="none" stroke="${ex.accent}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
-      }
-
-      // Points and labels
-      points.forEach((p, i) => {
-        const isLast = i === points.length - 1;
-        const isFirst = i === 0;
-        const r = isLast ? 5 : 3.5;
-        // Outer glow on last point
-        if (isLast) {
-          html += `<circle cx="${p.x}" cy="${p.y}" r="8" fill="${ex.accent}" opacity="0.15"/>`;
-        }
-        html += `<circle cx="${p.x}" cy="${p.y}" r="${r}" fill="${isLast ? ex.accent : 'var(--card)'}" stroke="${ex.accent}" stroke-width="2"/>`;
-        // Value label
-        const labelY = p.y - 10;
-        html += `<text x="${p.x}" y="${labelY < 12 ? p.y + 16 : labelY}" text-anchor="middle" fill="${isLast ? ex.accent : 'var(--text3)'}" font-size="${isLast ? 11 : 9}" font-weight="${isLast ? 700 : 500}" font-family="Space Grotesk,system-ui">${p.kg}</text>`;
-      });
-
-      html += '</svg>';
-
-      // Date labels
-      html += '<div class="chart-labels">';
-      data.forEach(d => { html += `<span>${d.date}</span>`; });
-      html += '</div>';
-
-      // Summary
-      if (data.length > 1) {
-        const diff = data[data.length-1].kg - data[0].kg;
-        const col = diff >= 0 ? 'var(--green)' : 'var(--red)';
-        html += `<div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px">
-          <span style="color:var(--text3)">Départ: <strong style="color:var(--text2)">${data[0].kg}kg</strong></span>
-          <span style="color:var(--text3)">Actuel: <strong style="color:${ex.accent}">${data[data.length-1].kg}kg</strong></span>
-          <span style="color:${col};font-weight:700">${diff>=0?'+':''}${diff.toFixed(1)}kg</span>
-        </div>`;
-      }
-    }
-    html += '</div>';
+    html += `<div style="flex:1;padding:10px 6px;background:var(--bg);border-radius:10px;text-align:center;border-top:2px solid ${lift.color}">
+      <div style="font-size:10px;font-weight:700;color:${lift.color};margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em">${lift.name}</div>
+      <div style="font-size:18px;font-weight:800;color:var(--text);line-height:1">${best1RM > 0 ? best1RM.toFixed(0) : '—'}<span style="font-size:9px;color:var(--text3);font-weight:600">${best1RM > 0 ? 'kg' : ''}</span></div>
+      ${trendHtml}
+      <div style="font-size:9px;color:var(--text3);margin-top:4px">${rkObj ? rkObj.icon + ' ' + rkObj.name : best1RM > 0 ? ratio.toFixed(2)+'×BW' : 'aucune donnée'}</div>
+    </div>`;
   });
 
-  // Session counts
-  html += '<h2 class="page-title" style="margin-top:20px">Volume d\'entraînement</h2>';
+  html += `</div></div>`;
+
+  // ---- ACCORDION DAY BLOCKS ----
   PROGRAM.forEach(d => {
-    const count = state.history.filter(h => h.dayId === d.id).length;
-    html += `<div class="card" style="margin-bottom:6px">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <span style="font-size:13px;font-weight:600;color:${d.accent}">${d.name}</span>
-        <span style="font-size:20px;font-weight:800;color:${d.accent}">${count}</span>
-      </div>
-      <div style="font-size:11px;color:var(--text3)">séances complétées</div>
-    </div>`;
+    const isOpen = progressAccordion === d.id;
+    const dayCount = state.history.filter(h => h.dayId === d.id).length;
+
+    html += `<div class="card prog-accordion${isOpen ? ' open' : ''}" style="margin-bottom:6px;border-left:3px solid ${d.accent}" onclick="toggleProgressAccordion('${d.id}')">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <span style="font-size:13px;font-weight:700;color:${d.accent}">${d.name}</span>
+          <span style="font-size:11px;color:var(--text3);margin-left:8px">${d.subtitle}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:11px;color:var(--text3)">${dayCount} séances</span>
+          <span style="font-size:13px;color:var(--text3);transition:transform 0.2s;display:inline-block;transform:rotate(${isOpen?'90':'0'}deg)">›</span>
+        </div>
+      </div>`;
+
+    if (isOpen) {
+      html += `<div style="margin-top:14px" onclick="event.stopPropagation()">`;
+      d.exercises.forEach(ex => {
+        const hist = getExerciseHistory(ex.id, ex.sets);
+
+        html += `<div style="margin-bottom:12px;padding-top:12px;border-top:1px solid var(--border)">`;
+        html += `<div style="font-size:13px;font-weight:700;color:${d.accent};margin-bottom:2px">${ex.name}</div>`;
+        html += `<div style="font-size:10px;color:var(--text3);margin-bottom:8px">${ex.format}</div>`;
+
+        if (!hist.length) {
+          html += '<div style="font-size:12px;color:var(--text3);padding:4px 0">Aucune donnée encore</div>';
+        } else {
+          const bestRM = Math.max(...hist.map(h => h.best1RM));
+          const bestKg = Math.max(...hist.map(h => h.bestKg));
+          const lastVol = hist[hist.length - 1].totalVol;
+
+          // Vol color: purple to differentiate from Jour C green
+          const volColor = '#8B5CF6';
+
+          html += `<div style="display:flex;gap:5px;margin-bottom:8px">
+            <div style="flex:1;padding:7px 5px;background:var(--bg);border-radius:7px;text-align:center">
+              <div style="font-size:14px;font-weight:800;color:${d.accent}">${bestKg.toFixed(1)}<span style="font-size:9px;font-weight:600">kg</span></div>
+              <div style="font-size:9px;color:var(--text3)">Charge max</div>
+            </div>
+            <div style="flex:1;padding:7px 5px;background:var(--bg);border-radius:7px;text-align:center">
+              <div style="font-size:14px;font-weight:800;color:var(--cyan)">${bestRM.toFixed(1)}<span style="font-size:9px;font-weight:600">kg</span></div>
+              <div style="font-size:9px;color:var(--text3)">1RM estimé</div>
+            </div>
+            <div style="flex:1;padding:7px 5px;background:var(--bg);border-radius:7px;text-align:center">
+              <div style="font-size:14px;font-weight:800;color:${volColor}">${lastVol > 1000 ? (lastVol/1000).toFixed(1)+'t' : lastVol+'kg'}</div>
+              <div style="font-size:9px;color:var(--text3)">Vol. dernière</div>
+            </div>
+          </div>`;
+
+          html += `<div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:3px">Charge max</div>`;
+          html += renderLineChart(hist, 'bestKg', d.accent, `pg-${ex.id}-kg`, 'kg');
+
+          if (hist.length >= 2) {
+            html += `<div style="font-size:10px;font-weight:600;color:var(--text3);margin:10px 0 3px">Volume (kg×reps)</div>`;
+            html += renderLineChart(hist, 'totalVol', volColor, `pg-${ex.id}-vol`, 'vol');
+          }
+        }
+
+        html += `</div>`;
+      });
+      html += `</div>`;
+    }
+
+    html += `</div>`;
   });
 
   // Vélo stats
