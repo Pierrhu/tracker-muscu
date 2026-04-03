@@ -317,15 +317,16 @@
     font-family: inherit; -webkit-appearance: none; -moz-appearance: textfield;
   }
 
-  /* HISTORY */
-  .hist-card { border-left: 3px solid var(--hist-accent); }
+  /* HISTORY CARDS */
+  .hist-card {
+    background: var(--card); border-radius: 10px; border: 1px solid var(--border);
+    padding: 12px 14px; margin-bottom: 6px;
+  }
   .hist-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
   .hist-tag {
     font-size: 10px; padding: 3px 7px; border-radius: 5px;
     background: var(--card2); color: var(--text2);
   }
-
-  /* CHART */
   .chart-svg { width: 100%; overflow: visible; }
   .chart-labels { display: flex; margin-top: 4px; }
   .chart-labels span { flex: 1; text-align: center; font-size: 8px; color: var(--text3); }
@@ -353,16 +354,6 @@
     background: transparent; color: var(--text2); font-size: 13px; font-weight: 600;
     cursor: pointer; font-family: inherit; margin-top: 8px;
   }
-
-  /* HIST ACTION BUTTONS */
-  .hist-actions { display: flex; gap: 6px; margin-top: 10px; }
-  .hist-btn {
-    flex: 1; padding: 8px; border-radius: 8px; font-size: 11px; font-weight: 700;
-    cursor: pointer; font-family: inherit; border: none;
-    display: flex; align-items: center; justify-content: center; gap: 4px;
-  }
-  .hist-btn-edit { background: rgba(45,125,210,0.15); color: var(--blue); }
-  .hist-btn-del { background: rgba(194,59,59,0.12); color: var(--red); }
 
   /* EXPORT BTN */
   .btn-export {
@@ -661,6 +652,7 @@
     <div id="edit-modal-body"></div>
     <button class="btn-primary" id="edit-modal-save" style="background:var(--blue)" onclick="saveEditSession()">Enregistrer les modifications ✓</button>
     <button class="modal-cancel" onclick="closeEditModal()">Annuler</button>
+    <button class="btn-outline" id="edit-modal-delete" style="margin-top:16px;display:none" onclick="">Supprimer</button>
   </div>
 </div>
 
@@ -815,17 +807,17 @@ const PROGRAM = [
           ],
           interet:'Cible la portion claviculaire (haut des pecs) qui est souvent en retard. Placé après le couché pour profiter de la pré-fatigue de la portion sternale — l\'incliné n\'a pas besoin d\'être lourd pour être efficace ici.'
         }},
-      {id:'a4',name:'Tirage vertical neutre',format:'3×10-12',sets:3,
+      {id:'a4',name:'Tirage vertical large',format:'3×10-12',sets:3,
         info:{
-          gif:'gifs/tirage-vertical-neutre.gif',
+          gif:'gifs/tirage-vertical-large.gif',
           execution:[
-            'Prise neutre (paumes face à face), largeur d\'épaules ou légèrement plus serrée.',
-            'Tirer les coudes vers le bas et l\'arrière, amener la barre au niveau du haut de la poitrine.',
-            'Squeeze 1-2 secondes en bas du mouvement en contractant les dorsaux.',
-            'Remonter lentement en contrôlant, bras quasi-tendus en haut (sans relâcher les épaules).',
-            'Ne pas tirer avec les bras — penser "coudes vers les hanches".'
+            'Prise pronation large (1.5× largeur d\'épaules), cuisses calées sous les boudins.',
+            'Tirer la barre vers le haut de la poitrine en bombant légèrement le torse.',
+            'Coudes tirés vers le bas et légèrement vers l\'arrière.',
+            'Contrôler la remontée — ne pas laisser le poids tirer les épaules vers le haut.',
+            'Garder une légère extension thoracique tout du long.'
           ],
-          interet:'Complète le rowing barre avec un tirage vertical pour varier le plan de mouvement. La prise neutre sollicite davantage le grand dorsal et réduit le stress sur les épaules. Évite aussi de surcharger le bas du dos déjà fatigué par le rowing.'
+          interet:'Complète le rowing barre avec un tirage vertical pour varier le plan de mouvement. La prise large cible la largeur du dos (grand dorsal). En volume modéré ici pour accumuler du travail sans fatiguer le bas du dos déjà sollicité par le rowing.'
         }},
       {id:'a5',name:'Élévations latérales',format:'3×12-15',sets:3,
         info:{
@@ -855,29 +847,29 @@ const PROGRAM = [
   {
     id:'B', name:'Jour B', subtitle:'Force Verticale', accent:'#2D7DD2', when:'Mercredi',
     exercises: [
-      {id:'b1',name:'DM haltères assis',format:'Top set 3-5 + 3×6-8',sets:4,topSet:true,rankKey:'ohp',
+      {id:'b1',name:'Développé militaire',format:'Top set 3-5 + 3×6-8',sets:4,topSet:true,rankKey:'ohp',
         info:{
           gif:'gifs/developpe-militaire-halteres.gif',
           execution:[
-            'Assis sur un banc avec dossier incliné à ~80-85° (léger soutien du dos).',
-            'Haltères au niveau des oreilles, paumes vers l\'avant, coudes sous les poignets.',
-            'Pousser vers le haut en arc de cercle, haltères se rapprochent en haut.',
-            'Descente contrôlée jusqu\'à ce que les coudes soient à ~90° ou légèrement en dessous.',
-            'Ne pas cambrer le dos — abdos gainés, pieds bien au sol.'
+            'Debout, pieds largeur de hanches, prise pronation légèrement plus large que les épaules.',
+            'Barre au niveau des clavicules, coudes sous la barre.',
+            'Pousser la barre au-dessus de la tête en passant légèrement la tête en avant une fois la barre passée.',
+            'Verrouiller en haut, bras tendus, barre au-dessus du centre de gravité.',
+            'Abdos et fessiers gainés en permanence. Ne pas cambrer le dos.'
           ],
-          interet:'Mouvement de force principal pour les épaules. Les haltères permettent une ROM plus grande que la barre et corrigent les déséquilibres gauche/droite. En top set pour construire la force du deltoïde antérieur, base de tous les mouvements de push.'
+          interet:'Mouvement de force principal pour les épaules. La barre permet de charger plus lourd que les haltères. Debout, il recrute davantage le gainage et les stabilisateurs. En top set pour construire la force du deltoïde antérieur.'
         }},
-      {id:'b2',name:'Tirage vertical large',format:'4×6-8 lourd',sets:4,
+      {id:'b2',name:'Tirage vertical neutre',format:'4×6-8 lourd',sets:4,
         info:{
-          gif:'gifs/tirage-vertical-large.gif',
+          gif:'gifs/tirage-vertical-neutre.gif',
           execution:[
-            'Prise pronation large (1.5× largeur d\'épaules), cuisses calées sous les boudins.',
-            'Tirer la barre vers le haut de la poitrine en bombant légèrement le torse.',
-            'Coudes tirés vers le bas et légèrement vers l\'arrière.',
-            'Contrôler la remontée — ne pas laisser le poids tirer les épaules vers le haut.',
-            'Garder une légère extension thoracique tout du long.'
+            'Prise neutre (paumes face à face), largeur d\'épaules ou légèrement plus serrée.',
+            'Tirer les coudes vers le bas et l\'arrière, amener la barre au niveau du haut de la poitrine.',
+            'Squeeze 1-2 secondes en bas du mouvement en contractant les dorsaux.',
+            'Remonter lentement en contrôlant, bras quasi-tendus en haut (sans relâcher les épaules).',
+            'Ne pas tirer avec les bras — penser "coudes vers les hanches".'
           ],
-          interet:'Travaillé en lourd (6-8 reps) — c\'est ton chemin vers les tractions. Le jour où tu tireras proprement ton poids de corps ici pour 6+ reps, tu feras ta première traction. La prise large cible la largeur du dos (grand dorsal).'
+          interet:'Travaillé en lourd (6-8 reps) — c\'est ton chemin vers les tractions. La prise neutre sollicite davantage le grand dorsal et réduit le stress sur les épaules. Le jour où tu tireras ton poids de corps ici pour 6+ reps, tu feras ta première traction.'
         }},
       {id:'b3',name:'Rowing DB unilatéral',format:'3×10-12/bras',sets:3,
         info:{
@@ -956,17 +948,16 @@ const PROGRAM = [
           ],
           interet:'Isolation pure des pectoraux avec tension constante (avantage de la poulie vs haltères). En fin de séance pecs pour finir le muscle avec du volume métabolique. Complète les développés qui sont des composés multi-articulaires.'
         }},
-      {id:'c4',name:'Latérales drop set méca.',format:'3×(8+8+8)',sets:3,dropSet:true,
+      {id:'c4',name:'Latérales drop set méca.',format:'3×(8+8)',sets:3,dropSet:true,
         info:{
           gif:'gifs/elevations-laterales-halteres.gif',
           execution:[
-            'Phase 1 — Penché (~45°) : 8 reps d\'élévations en position penchée (cible le deltoïde postérieur/latéral en stretch).',
+            'Phase 1 — Penché (~45°) : 8 reps d\'élévations en position penchée (cible le deltoïde latéral en stretch).',
             'Phase 2 — Debout : sans repos, se redresser et faire 8 reps classiques debout.',
-            'Phase 3 — Partiel haut : sans repos, 8 reps partielles (seulement la moitié haute du mouvement, de 45° à horizontal).',
-            'Même poids sur les 3 phases — le changement d\'angle rend le mouvement plus facile, ce qui permet de continuer sans baisser la charge.',
+            'Même poids sur les 2 phases — le changement d\'angle rend le mouvement plus facile, ce qui permet de continuer sans baisser la charge.',
             'Repos 1:30 entre les séries complètes.'
           ],
-          interet:'Technique la plus efficace pour maximiser le volume de travail du deltoïde latéral en un minimum de temps. Les 3 angles exploitent la courbe de force : quand tu es épuisé en position penchée, tu passes à un angle plus facile. 24 reps effectives par série avec le même poids.'
+          interet:'Technique efficace pour maximiser le volume du deltoïde latéral en peu de temps. Les 2 angles exploitent la courbe de force : quand tu es épuisé en position penchée, tu passes debout. 16 reps effectives par série avec le même poids.'
         }},
       {id:'c5',name:'Face pull corde',format:'2×15-20',sets:2,
         info:{
@@ -2201,7 +2192,7 @@ function renderHistory() {
         const d = PROGRAM.find(p => p.id === h.dayId);
         if (!d) return;
         const setCount = Object.keys(h.sets).length;
-        html += `<div class="card hist-card" style="--hist-accent:${d.accent}">
+        html += `<div class="hist-card" style="border-left:3px solid ${d.accent}" data-hist-action="openEditSession(${i})">
           <div style="display:flex;justify-content:space-between;align-items:center">
             <div>
               <div style="font-size:13px;font-weight:700;color:${d.accent}">${d.name} — ${d.subtitle}</div>
@@ -2219,16 +2210,12 @@ function renderHistory() {
               return `<span class="hist-tag">${ex.name.split(' ').slice(0,2).join(' ')} ${s.kg}kg×${s.reps}</span>`;
             }).join('')}
           </div>
-          <div class="hist-actions">
-            <button class="hist-btn hist-btn-edit" onclick="openEditSession(${i})">✏️ Modifier</button>
-            <button class="hist-btn hist-btn-del" onclick="deleteSession(${i})">🗑 Supprimer</button>
-          </div>
         </div>`;
       } else if (entry.type === 'velo') {
         const v = entry.data;
         const vi = entry.idx;
         const typeLabels = { endurance: '🛣️ Endurance', long: '🏔️ Sortie longue', recup: '🌿 Récup' };
-        html += `<div class="card hist-card" style="--hist-accent:var(--yellow)">
+        html += `<div class="hist-card" style="border-left:3px solid var(--yellow)" data-hist-action="openEditVelo(${vi})">
           <div style="display:flex;justify-content:space-between;align-items:center">
             <div>
               <div style="font-size:13px;font-weight:700;color:var(--yellow)">🚴 Vélo — ${typeLabels[v.type] || v.type}</div>
@@ -2239,9 +2226,6 @@ function renderHistory() {
               ${v.duration ? `<div style="font-size:10px;color:var(--text3)">${v.duration} min</div>` : ''}
             </div>
           </div>
-          <div class="hist-actions">
-            <button class="hist-btn hist-btn-del" onclick="deleteVeloSession(${vi})">🗑 Supprimer</button>
-          </div>
         </div>`;
       } else if (entry.type === 'body') {
         const b = entry.data;
@@ -2251,7 +2235,7 @@ function renderHistory() {
         if (b.bras) vals.push(`bras ${b.bras}cm`);
         if (b.poitrine) vals.push(`poit. ${b.poitrine}cm`);
         if (b.taille_cm) vals.push(`taille ${b.taille_cm}cm`);
-        html += `<div class="card hist-card" style="--hist-accent:var(--purple)">
+        html += `<div class="hist-card" style="border-left:3px solid var(--purple)" data-hist-action="openEditBodyStat(${bi})">
           <div style="display:flex;justify-content:space-between;align-items:center">
             <div>
               <div style="font-size:13px;font-weight:700;color:var(--purple)">📏 Mesure corporelle</div>
@@ -2262,10 +2246,6 @@ function renderHistory() {
             </div>
           </div>
           ${vals.length ? `<div class="hist-tags">${vals.map(v => `<span class="hist-tag">${v}</span>`).join('')}</div>` : ''}
-          <div class="hist-actions">
-            <button class="hist-btn hist-btn-edit" onclick="openEditBodyStat(${bi})">✏️ Modifier</button>
-            <button class="hist-btn hist-btn-del" onclick="deleteBodyStat(${bi})">🗑 Supprimer</button>
-          </div>
         </div>`;
       }
     });
@@ -2274,11 +2254,82 @@ function renderHistory() {
   }
 
   document.getElementById('page-history').innerHTML = html;
+  initHistSwipe();
 }
 
 // ---- EDIT SESSION ----
 let editingIdx = null;
 let editSets = {};
+
+function initHistSwipe() {
+  document.querySelectorAll('[data-hist-action]').forEach(card => {
+    const action = card.getAttribute('data-hist-action');
+    let startX = 0, startY = 0, tracking = false;
+
+    card.addEventListener('touchstart', e => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      tracking = true;
+    }, { passive: true });
+
+    card.addEventListener('touchmove', e => {
+      if (!tracking) return;
+      const dy = Math.abs(e.touches[0].clientY - startY);
+      if (dy > 30) tracking = false;
+    }, { passive: true });
+
+    card.addEventListener('touchend', e => {
+      if (!tracking) return;
+      tracking = false;
+      const dx = e.changedTouches[0].clientX - startX;
+      if (dx < -40) {
+        eval(action);
+      }
+    }, { passive: true });
+  });
+}
+
+// ---- EDIT VELO SESSION ----
+function openEditVelo(idx) {
+  const v = state.veloSessions[idx];
+  if (!v) return;
+
+  document.getElementById('edit-modal-title').textContent = `Modifier — Sortie vélo du ${formatDate(v.date)}`;
+
+  const typeLabels = { endurance: 'Endurance', long: 'Sortie longue', recup: 'Récupération' };
+  let body = `<div class="velo-input-row">
+    <div class="velo-field"><label>Distance (km)</label>
+      <input type="number" inputmode="decimal" id="edit-velo-distance" value="${v.distance||''}"></div>
+    <div class="velo-field"><label>Durée (min)</label>
+      <input type="number" inputmode="numeric" id="edit-velo-duration" value="${v.duration||''}"></div>
+  </div>
+  <div class="velo-input-row">
+    <div class="velo-field"><label>Type</label>
+      <select id="edit-velo-type">
+        <option value="endurance" ${v.type==='endurance'?'selected':''}>🛣️ Endurance</option>
+        <option value="long" ${v.type==='long'?'selected':''}>🏔️ Sortie longue</option>
+        <option value="recup" ${v.type==='recup'?'selected':''}>🌿 Récupération</option>
+      </select>
+    </div>
+  </div>`;
+
+  document.getElementById('edit-modal-body').innerHTML = body;
+  document.getElementById('edit-modal-save').setAttribute('onclick', `saveEditVelo(${idx})`);
+  const delBtn = document.getElementById('edit-modal-delete');
+  delBtn.style.display = 'block';
+  delBtn.setAttribute('onclick', `deleteVeloSession(${idx})`);
+  document.getElementById('edit-modal').classList.remove('hidden');
+}
+
+function saveEditVelo(idx) {
+  state.veloSessions[idx].distance = parseFloat(document.getElementById('edit-velo-distance').value) || 0;
+  state.veloSessions[idx].duration = parseInt(document.getElementById('edit-velo-duration').value) || 0;
+  state.veloSessions[idx].type = document.getElementById('edit-velo-type').value;
+  saveState();
+  closeEditModal();
+  showToast('Sortie vélo modifiée ✓');
+  render();
+}
 
 function openEditSession(idx) {
   editingIdx = idx;
@@ -2316,6 +2367,9 @@ function openEditSession(idx) {
 
   document.getElementById('edit-modal-body').innerHTML = body;
   document.getElementById('edit-modal-save').setAttribute('onclick', 'saveEditSession()');
+  const delBtn = document.getElementById('edit-modal-delete');
+  delBtn.style.display = 'block';
+  delBtn.setAttribute('onclick', `deleteSession(${idx})`);
   document.getElementById('edit-modal').classList.remove('hidden');
 }
 
@@ -2338,6 +2392,7 @@ function saveEditSession() {
 
 function closeEditModal() {
   document.getElementById('edit-modal').classList.add('hidden');
+  document.getElementById('edit-modal-delete').style.display = 'none';
   editingIdx = null;
   editingBodyIdx = null;
   editSets = {};
@@ -2348,6 +2403,7 @@ function deleteSession(idx) {
   const d = PROGRAM.find(p => p.id === h.dayId);
   const label = d ? `${d.name} du ${formatDate(h.date)}` : 'cette séance';
   if (confirm(`Supprimer ${label} ? Cette action est irréversible.`)) {
+    closeEditModal();
     state.history.splice(idx, 1);
     saveState();
     showToast('Séance supprimée');
@@ -2359,6 +2415,7 @@ function deleteVeloSession(idx) {
   const v = state.veloSessions[idx];
   const label = v ? `sortie vélo du ${formatDate(v.date)}` : 'cette sortie';
   if (confirm(`Supprimer ${label} ?`)) {
+    closeEditModal();
     state.veloSessions.splice(idx, 1);
     saveState();
     showToast('Sortie vélo supprimée');
@@ -2389,6 +2446,9 @@ function openEditBodyStat(idx) {
 
   document.getElementById('edit-modal-body').innerHTML = body;
   document.getElementById('edit-modal-save').setAttribute('onclick', 'saveEditBodyStat()');
+  const delBtn2 = document.getElementById('edit-modal-delete');
+  delBtn2.style.display = 'block';
+  delBtn2.setAttribute('onclick', `deleteBodyStat(${idx})`);
   document.getElementById('edit-modal').classList.remove('hidden');
 }
 
@@ -2412,6 +2472,7 @@ function deleteBodyStat(idx) {
   const b = state.bodyStats[idx];
   const label = b ? `mesure du ${formatDate(b.date)}` : 'cette mesure';
   if (confirm(`Supprimer ${label} ?`)) {
+    closeEditModal();
     state.bodyStats.splice(idx, 1);
     saveState();
     showToast('Mesure supprimée');
