@@ -822,7 +822,7 @@ function renderRank() {
           <circle class="progress-ring-bg" cx="70" cy="70" r="${ringR}"/>
         </svg>
         <div class="progress-ring-center">
-          <div class="rank-icon">🎯</div>
+          <div class="rank-icon"> </div>
         </div>
       </div>
       <div class="rank-name" style="color:var(--text3)">Non classé</div>
