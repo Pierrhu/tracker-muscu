@@ -52,9 +52,9 @@
 <!-- IMPORT MODAL -->
 <div class="modal-overlay hidden" id="import-modal">
   <div class="modal-box">
-    <div class="modal-title">📥 Charger un fichier Excel</div>
+    <div class="modal-title">Charger un fichier Excel</div>
     <div class="import-drop-zone" id="import-drop-zone" onclick="document.getElementById('import-file-input').click()">
-      <div class="drop-icon">📂</div>
+      <div class="drop-icon" style="font-size:24px;color:var(--text3)">↓</div>
       <div class="drop-title">Sélectionner un fichier Excel</div>
       <div class="drop-sub">Ou glisse-dépose ton fichier .xlsx ici</div>
     </div>
@@ -96,9 +96,9 @@
       <div class="velo-field">
         <label>Type de sortie</label>
         <select id="velo-type">
-          <option value="endurance">🛣️ Endurance (30-40 km)</option>
-          <option value="long">🏔️ Sortie longue (100+ km)</option>
-          <option value="recup">🌿 Récupération active</option>
+          <option value="endurance">Endurance (30-40 km)</option>
+          <option value="long">Sortie longue (100+ km)</option>
+          <option value="recup">Récupération active</option>
         </select>
       </div>
     </div>
@@ -108,7 +108,7 @@
         <input type="date" id="velo-date">
       </div>
     </div>
-    <button class="btn-primary" style="background:var(--yellow)" onclick="saveVeloSession()">Enregistrer la sortie 🚴</button>
+    <button class="btn-primary" style="background:var(--yellow)" onclick="saveVeloSession()">Enregistrer la sortie</button>
     <button class="modal-cancel" onclick="closeVeloModal()">Annuler</button>
   </div>
 </div>

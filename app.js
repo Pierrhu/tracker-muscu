@@ -1159,16 +1159,16 @@ function renderHistory() {
 
   if (!allEntries.length) {
     html += `<div class="card" style="text-align:center;padding:24px">
-      <div style="font-size:32px;margin-bottom:8px">📝</div>
+      
       <div style="font-size:13px;color:var(--text3)">Aucune activité enregistrée</div>
       <div style="font-size:11px;color:#444;margin-top:4px">Termine ta première séance pour la voir ici</div>
     </div>`;
-    html += `<button class="btn-import" onclick="openImportModal()">📥 Charger depuis Excel</button>`;
+    html += `<button class="btn-import" onclick="openImportModal()">Charger depuis Excel</button>`;
   } else {
     html += `<button class="btn-export" onclick="exportToExcel()">
-      📊 Exporter tout en Excel
+      Exporter tout en Excel
     </button>`;
-    html += `<button class="btn-import" onclick="openImportModal()">📥 Charger depuis Excel</button>`;
+    html += `<button class="btn-import" onclick="openImportModal()">Charger depuis Excel</button>`;
 
     allEntries.forEach(entry => {
       if (entry.type === 'muscu') {
@@ -1199,7 +1199,7 @@ function renderHistory() {
       } else if (entry.type === 'velo') {
         const v = entry.data;
         const vi = entry.idx;
-        const typeLabels = { endurance: '🛣️ Endurance', long: '🏔️ Sortie longue', recup: '🌿 Récup' };
+        const typeLabels = { endurance: 'Endurance', long: 'Sortie longue', recup: 'Récup' };
         html += `<div class="hist-card" style="border-left:3px solid var(--yellow)" data-hist-action="openEditVelo(${vi})">
           <div style="display:flex;justify-content:space-between;align-items:center">
             <div>
@@ -1223,7 +1223,7 @@ function renderHistory() {
         html += `<div class="hist-card" style="border-left:3px solid var(--purple)" data-hist-action="openEditBodyStat(${bi})">
           <div style="display:flex;justify-content:space-between;align-items:center">
             <div>
-              <div style="font-size:13px;font-weight:700;color:var(--purple)">📏 Mesure corporelle</div>
+              <div style="font-size:13px;font-weight:700;color:var(--purple)">Mesure corporelle</div>
               <div style="font-size:11px;color:var(--text3);margin-top:2px">${formatDate(b.date)}</div>
             </div>
             <div style="text-align:right">
@@ -1291,9 +1291,9 @@ function openEditVelo(idx) {
   <div class="velo-input-row">
     <div class="velo-field"><label>Type</label>
       <select id="edit-velo-type">
-        <option value="endurance" ${v.type==='endurance'?'selected':''}>🛣️ Endurance</option>
-        <option value="long" ${v.type==='long'?'selected':''}>🏔️ Sortie longue</option>
-        <option value="recup" ${v.type==='recup'?'selected':''}>🌿 Récupération</option>
+        <option value="endurance" ${v.type==='endurance'?'selected':''}>Endurance</option>
+        <option value="long" ${v.type==='long'?'selected':''}>Sortie longue</option>
+        <option value="recup" ${v.type==='recup'?'selected':''}>Récupération</option>
       </select>
     </div>
   </div>`;
@@ -1527,7 +1527,7 @@ function exportToExcel() {
 
   const filename = `tracker-muscu-${new Date().toISOString().slice(0,10)}.xlsx`;
   XLSX.writeFile(wb, filename);
-  showToast('Export Excel téléchargé 📊');
+  showToast('Export Excel téléchargé');
 }
 
 
@@ -1730,7 +1730,7 @@ function openImportModal() {
   document.getElementById('import-confirm-btn').style.display = 'none';
   document.getElementById('import-file-input').value = '';
   document.getElementById('import-drop-zone').innerHTML = `
-    <div class="drop-icon">📂</div>
+    <div class="drop-icon" style="font-size:24px;color:var(--text3)">↓</div>
     <div class="drop-title">Sélectionner un fichier Excel</div>
     <div class="drop-sub">Ou glisse-dépose ton fichier .xlsx ici</div>`;
   document.getElementById('import-modal').classList.remove('hidden');
@@ -1902,7 +1902,7 @@ function saveVeloSession() {
   state.veloSessions.push(entry);
   saveState();
   closeVeloModal();
-  showToast(`Sortie vélo enregistrée ! 🚴 ${distance}km`);
+  showToast(`Sortie vélo enregistrée ! ${distance}km`);
   render();
 }
 
@@ -2096,7 +2096,7 @@ function checkWeeklyRecap() {
   });
 
   // Build recap
-  let recapHtml = `<div class="recap-title">📊 Recap de la semaine</div>
+  let recapHtml = `<div class="recap-title">Recap de la semaine</div>
     <div class="recap-sub">Semaine du ${lastWeekStart.toLocaleDateString('fr-FR',{day:'2-digit',month:'long'})}</div>
     <div class="recap-stats">
       <div class="recap-stat">
