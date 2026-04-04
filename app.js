@@ -580,24 +580,17 @@ function onSetInput(exId, setIdx, kgKey, repsKey, isTopSet, rankKey) {
 }
 
 function startRestTimer(duration, exId) {
+  // Don't restart if already running for same duration
   if (restTimerInterval) clearInterval(restTimerInterval);
+
   restTimerDuration = duration;
   restTimerEnd = Date.now() + duration * 1000;
+
   const el = document.getElementById('rest-timer');
   const timeEl = document.getElementById('rest-timer-time');
   const fillEl = document.getElementById('rest-timer-fill');
   const labelEl = document.getElementById('rest-timer-label');
   const day = PROGRAM[state.dayIdx];
-
-  // ✅ CORRECTION : mesurer la nav réelle pour positionner le timer juste au-dessus
-  const nav = document.getElementById('nav');
-  document.documentElement.style.setProperty(
-    '--rest-timer-bottom',
-    (nav ? nav.getBoundingClientRect().height : 68) + 'px'
-  );
-
-  el.classList.add('active');
-  // ... reste inchangé
 
   el.classList.add('active');
   fillEl.style.background = day ? day.accent : 'var(--blue)';
@@ -829,7 +822,7 @@ function renderRank() {
           <circle class="progress-ring-bg" cx="70" cy="70" r="${ringR}"/>
         </svg>
         <div class="progress-ring-center">
-          <div class="rank-icon"> </div>
+          <div class="rank-icon">🎯</div>
         </div>
       </div>
       <div class="rank-name" style="color:var(--text3)">Non classé</div>
@@ -867,9 +860,13 @@ function updateWeight(val) {
 }
 
 // ---- PROGRESS ----
-let progressDayIdx = 0;
+let progressOpenDay = null; // null = collapsed, 'A'/'B'/'C' = open
 
-function selectProgressDay(i) { progressDayIdx = i; renderProgress(); document.getElementById('page-progress').classList.add('active'); }
+function toggleProgressDay(dayId) {
+  progressOpenDay = progressOpenDay === dayId ? null : dayId;
+  renderProgress();
+  document.getElementById('page-progress').classList.add('active');
+}
 
 function getExerciseHistory(exId, sets) {
   const results = [];
@@ -963,13 +960,45 @@ function renderLineChart(data, valueKey, color, gradId, unit) {
   return svg;
 }
 
-// ---- PROGRESS ACCORDION STATE ----
-let progressAccordion = null; // null = all closed
+function renderExerciseDetail(ex, accent) {
+  const hist = getExerciseHistory(ex.id, ex.sets);
+  let html = '';
+  html += `<div style="font-size:14px;font-weight:700;color:${accent};margin-bottom:4px">${ex.name}</div>`;
+  html += `<div style="font-size:11px;color:var(--text3);margin-bottom:10px">${ex.format}</div>`;
 
-function toggleProgressAccordion(dayId) {
-  progressAccordion = progressAccordion === dayId ? null : dayId;
-  renderProgress();
-  document.getElementById('page-progress').classList.add('active');
+  if (!hist.length) {
+    html += '<div style="font-size:12px;color:var(--text3);padding:4px 0">Aucune donnée encore</div>';
+    return html;
+  }
+
+  const bestRM = Math.max(...hist.map(h => h.best1RM));
+  const bestKg = Math.max(...hist.map(h => h.bestKg));
+  const lastVol = hist[hist.length - 1].totalVol;
+
+  html += `<div style="display:flex;gap:6px;margin-bottom:10px">
+    <div style="flex:1;padding:8px;background:var(--bg);border-radius:8px;text-align:center">
+      <div style="font-size:16px;font-weight:800;color:${accent}">${bestKg.toFixed(1)}<span style="font-size:10px;font-weight:600">kg</span></div>
+      <div style="font-size:9px;color:var(--text3)">Charge max</div>
+    </div>
+    <div style="flex:1;padding:8px;background:var(--bg);border-radius:8px;text-align:center">
+      <div style="font-size:16px;font-weight:800;color:var(--cyan)">${bestRM.toFixed(1)}<span style="font-size:10px;font-weight:600">kg</span></div>
+      <div style="font-size:9px;color:var(--text3)">1RM estimé</div>
+    </div>
+    <div style="flex:1;padding:8px;background:var(--bg);border-radius:8px;text-align:center">
+      <div style="font-size:16px;font-weight:800;color:#F97316">${lastVol > 1000 ? (lastVol / 1000).toFixed(1) + 't' : lastVol + 'kg'}</div>
+      <div style="font-size:9px;color:var(--text3)">Vol. dernière</div>
+    </div>
+  </div>`;
+
+  html += `<div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Charge max par séance</div>`;
+  html += renderLineChart(hist, 'bestKg', accent, `pg-${ex.id}-kg`, 'kg');
+
+  if (hist.length >= 2) {
+    html += `<div style="font-size:11px;font-weight:600;color:var(--text2);margin:12px 0 4px">Volume par séance</div>`;
+    html += renderLineChart(hist, 'totalVol', '#F97316', `pg-${ex.id}-vol`, 'vol');
+  }
+
+  return html;
 }
 
 function renderProgress() {
@@ -990,117 +1019,54 @@ function renderProgress() {
   // Heatmap
   html += renderHeatmap();
 
-  // ---- 3 BIG LIFTS TRACKER ----
-  const bigLifts = [
-    { key: 'bench', exId: 'a1', name: 'Bench', color: 'var(--red)' },
-    { key: 'row',   exId: 'a2', name: 'Row',   color: 'var(--blue)' },
-    { key: 'ohp',   exId: 'b1', name: 'OHP',   color: 'var(--yellow)' },
+  // ===== BIG 3 LIFTS — compact row =====
+  const big3 = [
+    { exId: 'a1', label: 'Bench', accent: '#C23B3B', sets: 4 },
+    { exId: 'b1', label: 'OHP', accent: '#2D7DD2', sets: 4 },
+    { exId: 'a2', label: 'Row', accent: '#C23B3B', sets: 4 },
   ];
 
-  html += `<div class="card" style="margin-bottom:14px">
-    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px">3 gros exercices — Meilleur 1RM</div>
-    <div style="display:flex;gap:6px">`;
+  html += '<div style="display:flex;gap:6px;margin:16px 0 20px">';
+  big3.forEach(lift => {
+    const hist = getExerciseHistory(lift.exId, lift.sets);
+    const last = hist.length ? hist[hist.length - 1] : null;
+    const bestRM = hist.length ? Math.max(...hist.map(h => h.best1RM)) : 0;
 
-  bigLifts.forEach(lift => {
-    const best1RM = getBest1RM(lift.key);
-    const bw = state.bodyWeight || 95;
-    const ratio = best1RM / bw;
-    const rkIdx = best1RM > 0 ? getRankIdx(ratio, STANDARDS[lift.key].thresholds) : -1;
-    const rkObj = rkIdx >= 0 ? RANKS[rkIdx] : null;
-
-    // Recent trend: last 2 sessions with this exercise
-    const history = [];
-    state.history.forEach(h => {
-      const s = h.sets[`${lift.exId}_0`];
-      if (s) {
-        const kg = parseFloat(s.kg)||0;
-        const reps = parseInt(s.reps)||0;
-        if (kg > 0 && reps > 0) history.push(calc1RM(kg, reps));
+    html += `<div class="card" style="flex:1;text-align:center;padding:10px 6px;border-top:3px solid ${lift.accent}">
+      <div style="font-size:11px;font-weight:700;color:${lift.accent};margin-bottom:6px">${lift.label}</div>
+      ${last
+        ? `<div style="font-size:18px;font-weight:800;color:var(--text);line-height:1">${last.bestKg}×${last.bestReps}</div>
+           <div style="font-size:10px;color:var(--text3);margin-top:4px">1RM: <strong style="color:var(--cyan)">${bestRM.toFixed(0)}kg</strong></div>`
+        : '<div style="font-size:12px;color:var(--text3)">—</div>'
       }
-    });
-    const trend = history.length >= 2
-      ? (history[history.length-1] - history[history.length-2])
-      : null;
-    const trendHtml = trend !== null
-      ? `<div style="font-size:10px;font-weight:700;color:${trend >= 0 ? 'var(--green)' : 'var(--red)'};margin-top:1px">${trend >= 0 ? '+' : ''}${trend.toFixed(1)}kg</div>`
-      : '';
-
-    html += `<div style="flex:1;padding:10px 6px;background:var(--bg);border-radius:10px;text-align:center;border-top:2px solid ${lift.color}">
-      <div style="font-size:10px;font-weight:700;color:${lift.color};margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em">${lift.name}</div>
-      <div style="font-size:18px;font-weight:800;color:var(--text);line-height:1">${best1RM > 0 ? best1RM.toFixed(0) : '—'}<span style="font-size:9px;color:var(--text3);font-weight:600">${best1RM > 0 ? 'kg' : ''}</span></div>
-      ${trendHtml}
-      <div style="font-size:9px;color:var(--text3);margin-top:4px">${rkObj ? rkObj.icon + ' ' + rkObj.name : best1RM > 0 ? ratio.toFixed(2)+'×BW' : 'aucune donnée'}</div>
     </div>`;
   });
+  html += '</div>';
 
-  html += `</div></div>`;
+  // ===== DETAILED PER-DAY — collapsible =====
+  html += '<h2 class="page-title" style="margin-top:20px">Détail par séance</h2>';
 
-  // ---- ACCORDION DAY BLOCKS ----
   PROGRAM.forEach(d => {
-    const isOpen = progressAccordion === d.id;
-    const dayCount = state.history.filter(h => h.dayId === d.id).length;
+    const isOpen = progressOpenDay === d.id;
+    const count = state.history.filter(h => h.dayId === d.id).length;
 
-    html += `<div class="card prog-accordion${isOpen ? ' open' : ''}" style="margin-bottom:6px;border-left:3px solid ${d.accent}" onclick="toggleProgressAccordion('${d.id}')">
-      <div style="display:flex;align-items:center;justify-content:space-between">
+    html += `<div class="card" style="margin-bottom:8px;cursor:pointer;border-left:3px solid ${d.accent}" onclick="toggleProgressDay('${d.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:center">
         <div>
-          <span style="font-size:13px;font-weight:700;color:${d.accent}">${d.name}</span>
-          <span style="font-size:11px;color:var(--text3);margin-left:8px">${d.subtitle}</span>
+          <div style="font-size:14px;font-weight:700;color:${d.accent}">${d.name} — ${d.subtitle}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">${count} séances · ${d.exercises.length} exercices</div>
         </div>
-        <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-size:11px;color:var(--text3)">${dayCount} séances</span>
-          <span style="font-size:13px;color:var(--text3);transition:transform 0.2s;display:inline-block;transform:rotate(${isOpen?'90':'0'}deg)">›</span>
-        </div>
-      </div>`;
+        <div style="font-size:18px;color:${isOpen ? d.accent : 'var(--text3)'};transition:0.15s">${isOpen ? '▾' : '▸'}</div>
+      </div>
+    </div>`;
 
     if (isOpen) {
-      html += `<div style="margin-top:14px" onclick="event.stopPropagation()">`;
       d.exercises.forEach(ex => {
-        const hist = getExerciseHistory(ex.id, ex.sets);
-
-        html += `<div style="margin-bottom:12px;padding-top:12px;border-top:1px solid var(--border)">`;
-        html += `<div style="font-size:13px;font-weight:700;color:${d.accent};margin-bottom:2px">${ex.name}</div>`;
-        html += `<div style="font-size:10px;color:var(--text3);margin-bottom:8px">${ex.format}</div>`;
-
-        if (!hist.length) {
-          html += '<div style="font-size:12px;color:var(--text3);padding:4px 0">Aucune donnée encore</div>';
-        } else {
-          const bestRM = Math.max(...hist.map(h => h.best1RM));
-          const bestKg = Math.max(...hist.map(h => h.bestKg));
-          const lastVol = hist[hist.length - 1].totalVol;
-
-          // Vol color: purple to differentiate from Jour C green
-          const volColor = '#8B5CF6';
-
-          html += `<div style="display:flex;gap:5px;margin-bottom:8px">
-            <div style="flex:1;padding:7px 5px;background:var(--bg);border-radius:7px;text-align:center">
-              <div style="font-size:14px;font-weight:800;color:${d.accent}">${bestKg.toFixed(1)}<span style="font-size:9px;font-weight:600">kg</span></div>
-              <div style="font-size:9px;color:var(--text3)">Charge max</div>
-            </div>
-            <div style="flex:1;padding:7px 5px;background:var(--bg);border-radius:7px;text-align:center">
-              <div style="font-size:14px;font-weight:800;color:var(--cyan)">${bestRM.toFixed(1)}<span style="font-size:9px;font-weight:600">kg</span></div>
-              <div style="font-size:9px;color:var(--text3)">1RM estimé</div>
-            </div>
-            <div style="flex:1;padding:7px 5px;background:var(--bg);border-radius:7px;text-align:center">
-              <div style="font-size:14px;font-weight:800;color:${volColor}">${lastVol > 1000 ? (lastVol/1000).toFixed(1)+'t' : lastVol+'kg'}</div>
-              <div style="font-size:9px;color:var(--text3)">Vol. dernière</div>
-            </div>
-          </div>`;
-
-          html += `<div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:3px">Charge max</div>`;
-          html += renderLineChart(hist, 'bestKg', d.accent, `pg-${ex.id}-kg`, 'kg');
-
-          if (hist.length >= 2) {
-            html += `<div style="font-size:10px;font-weight:600;color:var(--text3);margin:10px 0 3px">Volume (kg×reps)</div>`;
-            html += renderLineChart(hist, 'totalVol', volColor, `pg-${ex.id}-vol`, 'vol');
-          }
-        }
-
-        html += `</div>`;
+        html += `<div class="card" style="margin-bottom:8px;margin-left:8px;border-left:2px solid ${d.accent}30;animation:setsSlide 0.25s ease">`;
+        html += renderExerciseDetail(ex, d.accent);
+        html += '</div>';
       });
-      html += `</div>`;
     }
-
-    html += `</div>`;
   });
 
   // Vélo stats
@@ -1109,7 +1075,7 @@ function renderProgress() {
     const totalMin = state.veloSessions.reduce((a, v) => a + (v.duration || 0), 0);
     const totalH = Math.floor(totalMin / 60);
     const remMin = totalMin % 60;
-    html += `<div class="card" style="margin-bottom:6px;border-left:3px solid var(--yellow)">
+    html += `<div class="card" style="margin-bottom:6px;border-left:3px solid var(--yellow);margin-top:16px">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <span style="font-size:13px;font-weight:600;color:var(--yellow)">🚴 Vélo</span>
         <span style="font-size:20px;font-weight:800;color:var(--yellow)">${state.veloSessions.length}</span>

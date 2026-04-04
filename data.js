@@ -237,10 +237,10 @@ const STANDARDS = {
   },
   row: {
     name: 'Rowing barre',
-    thresholds: [0.30, 0.50, 0.70, 0.90, 1.05, 1.20, 1.35, 1.50]
+    thresholds: [0.30, 0.50, 0.70, 0.90, 1.10, 1.30, 1.50, 1.75]
   },
   ohp: {
     name: 'Développé militaire',
-    thresholds: [0.20, 0.35, 0.50, 0.65, 0.80, 0.95, 1.10, 1.25]
+    thresholds: [0.20, 0.35, 0.50, 0.65, 0.80, 1.00, 1.20, 1.40]
   }
 };
