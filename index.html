@@ -10,6 +10,44 @@
 <meta name="application-name" content="Tracker Muscu">
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="styles.css">
+
+<style>
+  /* ── Safe Area iOS — Dynamic Island / Notch ── */
+
+  .page {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .nav {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .session-bar {
+    top: env(safe-area-inset-top);
+  }
+
+  .rest-timer {
+    top: calc(env(safe-area-inset-top) + 8px);
+  }
+
+  .swipe-panel {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .modal-box {
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  }
+
+  .pr-celebrate-overlay {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .recap-box {
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  }
+</style>
+
 <title>Tracker Muscu</title>
 </head>
 <body>
