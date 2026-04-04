@@ -580,17 +580,24 @@ function onSetInput(exId, setIdx, kgKey, repsKey, isTopSet, rankKey) {
 }
 
 function startRestTimer(duration, exId) {
-  // Don't restart if already running for same duration
   if (restTimerInterval) clearInterval(restTimerInterval);
-
   restTimerDuration = duration;
   restTimerEnd = Date.now() + duration * 1000;
-
   const el = document.getElementById('rest-timer');
   const timeEl = document.getElementById('rest-timer-time');
   const fillEl = document.getElementById('rest-timer-fill');
   const labelEl = document.getElementById('rest-timer-label');
   const day = PROGRAM[state.dayIdx];
+
+  // ✅ CORRECTION : mesurer la nav réelle pour positionner le timer juste au-dessus
+  const nav = document.getElementById('nav');
+  document.documentElement.style.setProperty(
+    '--rest-timer-bottom',
+    (nav ? nav.getBoundingClientRect().height : 68) + 'px'
+  );
+
+  el.classList.add('active');
+  // ... reste inchangé
 
   el.classList.add('active');
   fillEl.style.background = day ? day.accent : 'var(--blue)';
