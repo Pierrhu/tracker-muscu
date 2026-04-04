@@ -1023,7 +1023,7 @@ function renderProgress() {
   const big3 = [
     { exId: 'a1', label: 'Bench', accent: '#C23B3B', sets: 4 },
     { exId: 'b1', label: 'OHP', accent: '#2D7DD2', sets: 4 },
-    { exId: 'a2', label: 'Row', accent: '#C23B3B', sets: 4 },
+    { exId: 'a2', label: 'Row', accent: '#A78BFA', sets: 4 },
   ];
 
   html += '<div style="display:flex;gap:6px;margin:16px 0 20px">';

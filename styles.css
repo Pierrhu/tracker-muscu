@@ -27,6 +27,7 @@
     max-width: 480px;
     margin: 0 auto;
     overflow-x: hidden;
+    padding-top: max(16px, env(safe-area-inset-top));
     padding-bottom: 72px;
   }
 
