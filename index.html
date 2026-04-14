@@ -399,24 +399,26 @@
     { text: "Tu n'as pas à être extrême, juste constant.", author: "Proverbe de progression" },
   ];
 
-  // Sélection d'une citation différente à chaque ouverture (jamais deux fois de suite)
-  (function() {
-    const SPLASH_KEY = 'trax-splash-shown';
-    const QUOTE_KEY  = 'trax-last-quote';
-    const lastShown  = parseInt(localStorage.getItem(SPLASH_KEY) || '0', 10);
-    const lastIdx    = parseInt(localStorage.getItem(QUOTE_KEY)  || '-1', 10);
-    const now        = Date.now();
-    const EIGHT_HOURS = 8 * 60 * 60 * 1000;
+(function() {
+    // Utilisation de sessionStorage : l'écran revient si l'app est fermée/relancée
+    const SESSION_KEY = 'trax-splash-session-seen';
+    const QUOTE_KEY   = 'trax-last-quote';
+    
+    const alreadySeenInSession = sessionStorage.getItem(SESSION_KEY);
+    const lastIdx = parseInt(localStorage.getItem(QUOTE_KEY) || '-1', 10);
 
-    // Cache immédiatement si vu récemment
-    if (now - lastShown < EIGHT_HOURS) {
+    // Si déjà vu durant cette session active, on cache immédiatement
+    if (alreadySeenInSession) {
       document.getElementById('splash-screen').style.display = 'none';
       return;
     }
 
-    // Choisir une citation au hasard, jamais la même que la dernière
+    // Choisir une citation au hasard
     let idx;
-    do { idx = Math.floor(Math.random() * SPLASH_QUOTES.length); } while (idx === lastIdx && SPLASH_QUOTES.length > 1);
+    do { 
+      idx = Math.floor(Math.random() * SPLASH_QUOTES.length); 
+    } while (idx === lastIdx && SPLASH_QUOTES.length > 1);
+    
     localStorage.setItem(QUOTE_KEY, idx.toString());
 
     const q = SPLASH_QUOTES[idx];
@@ -428,7 +430,10 @@
     const el = document.getElementById('splash-screen');
     if (!el || el.style.display === 'none') return;
     el.classList.add('fade-out');
-    localStorage.setItem('trax-splash-shown', Date.now().toString());
+    
+    // On enregistre qu'on l'a vu pour la session en cours
+    sessionStorage.setItem('trax-splash-session-seen', 'true');
+    
     setTimeout(() => { el.style.display = 'none'; }, 700);
   }
 
