@@ -2044,17 +2044,31 @@ function confirmImport() {
 
 // ---- CYCLING SESSIONS ----
 function openBasicFit() {
-  // Tentative d'ouverture de l'app Basic Fit via deep link
-  const deepLink = 'basicfit://';
-  const appStoreUrl = 'https://www.basic-fit.com/fr-fr/app';
+  // On définit les deux types de liens (Android et Universel)
+  const isAndroid = /Android/i.test(navigator.userAgent);
+  const deepLink = isAndroid 
+    ? 'intent://#Intent;package=com.basicfit.fr;scheme=basicfit;end;' 
+    : 'basicfit://';
 
-  // On tente le deep link, avec fallback vers le site après 1.5s
-  const fallbackTimer = setTimeout(() => {
-    window.open(appStoreUrl, '_blank');
-  }, 1500);
+  // 1. Créer un lien invisible
+  const a = document.createElement('a');
+  a.href = deepLink;
+  
+  // 2. Masquer le splash screen de ton tracker
+  const splash = document.getElementById('splash-screen');
+  if (splash) splash.style.display = 'none';
 
-  window.addEventListener('blur', () => clearTimeout(fallbackTimer), { once: true });
-  window.location.href = deepLink;
+  // 3. Forcer le clic sur le lien
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  // 4. Fallback : si l'app n'est pas là, on va sur le site après 2 secondes
+  setTimeout(() => {
+    if (!document.hidden) {
+      window.location.href = 'https://www.basic-fit.com/fr-fr/app';
+    }
+  }, 2000);
 }
 
 function openVeloModal() {
