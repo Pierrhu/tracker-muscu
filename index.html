@@ -293,157 +293,77 @@
     position: relative;
     overflow: visible;
   }
+  /* ── TRANSITION "LE SCEAU SE BRISE" ── */
+
   .splash-battlefield-btn.ignite {
-    animation: btnIgnite 0.5s ease forwards;
+    animation: btnSeal 0.45s cubic-bezier(0.4, 0, 0.6, 1) forwards;
   }
-  @keyframes btnIgnite {
-    0%   { transform: scale(1);    box-shadow: 0 0 24px rgba(194,59,59,0.12); background: rgba(194,59,59,0.10); border-color: rgba(194,59,59,0.55); }
-    30%  { transform: scale(0.93); box-shadow: 0 0 10px rgba(194,59,59,0.2);  background: rgba(194,59,59,0.08); }
-    65%  { transform: scale(1.08); box-shadow: 0 0 80px rgba(194,59,59,0.9), 0 0 160px rgba(194,59,59,0.4); background: rgba(194,59,59,0.7); border-color: #FF4040; color: #fff; }
-    100% { transform: scale(1.02); box-shadow: 0 0 50px rgba(194,59,59,0.6); background: rgba(194,59,59,0.45); }
-  }
-  .splash-battlefield-icon {
-    font-size: 18px;
-    filter: drop-shadow(0 0 6px rgba(194,59,59,0.6));
-  }
-  .splash-battlefield-text {
-    text-shadow: 0 0 20px rgba(194,59,59,0.4);
+  @keyframes btnSeal {
+    0%   { transform: scale(1);    background: rgba(194,59,59,0.10); color: #C23B3B; border-color: rgba(194,59,59,0.55); }
+    35%  { transform: scale(0.94); background: rgba(194,59,59,0.05); }
+    65%  { transform: scale(1.06); background: #C23B3B; color: #fff; border-color: #FF5050; box-shadow: 0 0 40px rgba(194,59,59,0.8); }
+    100% { transform: scale(0.98); opacity: 0; }
   }
 
-  /* ── TRANSITION OVERLAY ── */
   #battle-transition {
-    position: fixed; inset: 0;
-    z-index: 9998; pointer-events: none; display: none;
+    position: fixed; inset: 0; z-index: 9998;
+    pointer-events: none; display: none;
   }
   #battle-transition.active { display: block; }
 
-  /* Shockwave rings — 3 anneaux de tailles différentes */
-  .bt-ring {
-    position: absolute; top: 50%; left: 50%;
-    width: 0; height: 0; border-radius: 50%;
-    transform: translate(-50%, -50%);
+  /* Anneau 1 — principal, bien visible */
+  #bt-ring-a {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    /* scale() pour GPU — démarre visible */
+    transform: translate(-50%, -50%) scale(0.8);
     border: 4px solid rgba(194,59,59,1);
-    box-shadow: 0 0 20px rgba(194,59,59,0.8), 0 0 50px rgba(194,59,59,0.4), inset 0 0 20px rgba(194,59,59,0.3);
-  }
-  .bt-ring.fire { animation: ringExpand 1.1s cubic-bezier(0.15, 0.8, 0.3, 1) forwards; }
-  .bt-ring-2 {
-    position: absolute; top: 50%; left: 50%;
-    width: 0; height: 0; border-radius: 50%;
-    transform: translate(-50%, -50%);
-    border: 2px solid rgba(255,80,80,0.7);
-    box-shadow: 0 0 12px rgba(255,80,80,0.5);
-  }
-  .bt-ring-2.fire { animation: ringExpand 1.3s cubic-bezier(0.1, 0.7, 0.25, 1) 0.12s forwards; }
-  .bt-ring-3 {
-    position: absolute; top: 50%; left: 50%;
-    width: 0; height: 0; border-radius: 50%;
-    transform: translate(-50%, -50%);
-    border: 1px solid rgba(194,59,59,0.35);
-  }
-  .bt-ring-3.fire { animation: ringExpand 1.5s cubic-bezier(0.1, 0.6, 0.2, 1) 0.25s forwards; }
-  @keyframes ringExpand {
-    0%   { width: 40px; height: 40px; opacity: 1; }
-    50%  { opacity: 0.8; }
-    85%  { opacity: 0.3; }
-    100% { width: 260vmax; height: 260vmax; opacity: 0; }
-  }
-
-  /* 3 slashs diagonaux décalés */
-  .bt-slash {
-    position: absolute; top: 45%; left: -5%;
-    width: 0; height: 5px;
-    background: linear-gradient(90deg, transparent 0%, #FF2020 20%, #FF8080 50%, #FF2020 80%, transparent 100%);
-    box-shadow: 0 0 20px rgba(255,30,30,1), 0 0 60px rgba(194,59,59,0.7);
-    transform: rotate(-10deg); transform-origin: left center;
-  }
-  .bt-slash.fire { animation: slashAcross 0.35s cubic-bezier(0.25, 0, 0.1, 1) 0.35s both; }
-  .bt-slash-2 {
-    position: absolute; top: 50%; left: -5%;
-    width: 0; height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(255,120,120,0.9), transparent);
-    box-shadow: 0 0 10px rgba(194,59,59,0.6);
-    transform: rotate(-10deg); transform-origin: left center;
-  }
-  .bt-slash-2.fire { animation: slashAcross 0.35s cubic-bezier(0.25, 0, 0.1, 1) 0.42s both; }
-  .bt-slash-3 {
-    position: absolute; top: 56%; left: -5%;
-    width: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(194,59,59,0.5), transparent);
-    transform: rotate(-10deg); transform-origin: left center;
-  }
-  .bt-slash-3.fire { animation: slashAcross 0.38s cubic-bezier(0.25, 0, 0.1, 1) 0.48s both; }
-  @keyframes slashAcross {
-    0%   { width: 0;    opacity: 0; }
-    5%   { opacity: 1; }
-    55%  { width: 120%; opacity: 1; }
-    80%  { opacity: 0.6; }
-    100% { width: 120%; opacity: 0; }
-  }
-
-  /* Tremblement de l'écran splash */
-  @keyframes screenShake {
-    0%,100% { transform: translateX(0); }
-    15%     { transform: translateX(-8px) rotate(-0.5deg); }
-    30%     { transform: translateX(7px)  rotate(0.4deg); }
-    45%     { transform: translateX(-5px) rotate(-0.3deg); }
-    60%     { transform: translateX(4px)  rotate(0.2deg); }
-    75%     { transform: translateX(-2px); }
-  }
-
-  /* Flash final */
-  .bt-flash {
-    position: absolute; inset: 0;
-    background: radial-gradient(ellipse 80% 70% at 50% 50%,
-      rgba(255,60,60,1) 0%,
-      rgba(194,20,20,0.97) 35%,
-      rgba(60,0,0,1) 75%,
-      #000 100%);
+    box-shadow: 0 0 0 1px rgba(255,100,100,0.4), inset 0 0 0 1px rgba(255,100,100,0.2);
     opacity: 0;
   }
-  .bt-flash.fire {
-    animation: screenFlash 1.0s ease forwards;
+  #bt-ring-a.fire {
+    animation: ringScale 1.0s cubic-bezier(0.2, 0.8, 0.25, 1) forwards;
   }
-  @keyframes screenFlash {
+
+  /* Anneau 2 — décalé, plus fin */
+  #bt-ring-b {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    border: 1.5px solid rgba(194,59,59,0.55);
+    opacity: 0;
+  }
+  #bt-ring-b.fire {
+    animation: ringScale 1.1s cubic-bezier(0.15, 0.8, 0.2, 1) 0.15s forwards;
+  }
+
+  @keyframes ringScale {
+    0%   { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+    15%  { opacity: 1; }
+    70%  { opacity: 0.5; }
+    100% { transform: translate(-50%, -50%) scale(35);  opacity: 0; }
+  }
+
+  /* Voile sombre — arrive APRÈS les anneaux */
+  #bt-veil {
+    position: absolute; inset: 0;
+    background: #0C0C10;
+    opacity: 0;
+  }
+  #bt-veil.fire {
+    animation: veilFade 0.55s cubic-bezier(0.55, 0, 1, 1) forwards;
+  }
+  @keyframes veilFade {
     0%   { opacity: 0; }
-    15%  { opacity: 0.6; }
-    35%  { opacity: 1; }
-    70%  { opacity: 1; }
     100% { opacity: 1; }
   }
 
-  /* Sparks */
-  .bt-spark {
-    position: absolute;
-    border-radius: 50%;
-    background: #FF6060;
-    box-shadow: 0 0 8px #FF2020, 0 0 16px rgba(194,59,59,0.6);
-  }
-  .bt-spark.fire {
-    animation: sparkFly var(--dur,0.8s) cubic-bezier(0.2,0.8,0.4,1) var(--delay,0s) forwards;
-  }
-  @keyframes sparkFly {
-    0%   { transform: translate(-50%,-50%) translate(0,0) scale(1); opacity: 1; }
-    60%  { opacity: 0.8; }
-    100% { transform: translate(-50%,-50%) translate(var(--tx),var(--ty)) scale(0); opacity: 0; }
-  }
-
-  /* Traînée lumineuse (streaks) */
-  .bt-streak {
-    position: absolute;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,60,60,0.9), transparent);
-    box-shadow: 0 0 6px rgba(194,59,59,0.5);
-    transform-origin: center center;
-    opacity: 0;
-  }
-  .bt-streak.fire {
-    animation: streakPulse var(--dur,0.6s) ease var(--delay,0s) forwards;
-  }
-  @keyframes streakPulse {
-    0%   { opacity: 0; transform: rotate(var(--angle)) scaleX(0); }
-    30%  { opacity: 1; }
-    100% { opacity: 0; transform: rotate(var(--angle)) scaleX(1); }
-  }
+  .splash-battlefield-icon { font-size: 18px; filter: drop-shadow(0 0 6px rgba(194,59,59,0.6)); }
+  .splash-battlefield-text { text-shadow: 0 0 20px rgba(194,59,59,0.4); }
 
   @keyframes splashItemIn {
     from { opacity: 0; transform: translateY(14px); }
@@ -508,13 +428,9 @@
 <!-- SPLASH SCREEN -->
 <!-- BATTLE TRANSITION OVERLAY -->
 <div id="battle-transition">
-  <div class="bt-ring"   id="bt-ring"></div>
-  <div class="bt-ring-2" id="bt-ring-2"></div>
-  <div class="bt-ring-3" id="bt-ring-3"></div>
-  <div class="bt-slash"  id="bt-slash"></div>
-  <div class="bt-slash-2" id="bt-slash-2"></div>
-  <div class="bt-slash-3" id="bt-slash-3"></div>
-  <div class="bt-flash"  id="bt-flash"></div>
+  <div id="bt-ring-a"></div>
+  <div id="bt-ring-b"></div>
+  <div id="bt-veil"></div>
 </div>
 
 <div id="splash-screen" onclick="dismissSplash()">
@@ -572,86 +488,46 @@
   })();
 
   function goToBattlefield() {
-    const ua = navigator.userAgent;
-    const isAndroid = /Android/i.test(ua);
-    const isIOS     = /iPhone|iPad|iPod/i.test(ua);
     const btn    = document.getElementById('splash-battlefield-btn');
     const splash = document.getElementById('splash-screen');
     const tr     = document.getElementById('battle-transition');
+
     btn.style.pointerEvents = 'none';
     tr.classList.add('active');
 
-    // Position du bouton pour les particules
-    const rect = btn.getBoundingClientRect();
-    const cx = rect.left + rect.width  / 2;
-    const cy = rect.top  + rect.height / 2;
-
-    // ── PHASE 1 (0ms) : bouton compress → explosion ───────────────────────
+    // 1 — Bouton : compression → explosion (0ms)
     btn.classList.add('ignite');
 
-    // 30 sparks depuis le bouton
-    for (let i = 0; i < 30; i++) {
-      const sp = document.createElement('div');
-      sp.className = 'bt-spark';
-      const angle  = (i / 30) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
-      const dist   = 80 + Math.random() * 180;
-      const tx     = Math.cos(angle) * dist + 'px';
-      const ty     = Math.sin(angle) * dist + 'px';
-      const size   = 3 + Math.random() * 5;
-      const dur    = (0.5 + Math.random() * 0.6).toFixed(2) + 's';
-      const delay  = (Math.random() * 0.12).toFixed(2) + 's';
-      sp.style.cssText = `top:${cy}px;left:${cx}px;--tx:${tx};--ty:${ty};--dur:${dur};--delay:${delay};width:${size}px;height:${size}px;`;
-      tr.appendChild(sp);
-      setTimeout(() => sp.classList.add('fire'), 10);
-    }
-
-    // 8 streaks rayonnantes depuis le bouton
-    for (let i = 0; i < 8; i++) {
-      const st = document.createElement('div');
-      st.className = 'bt-streak';
-      const angle  = (i / 8) * 180;
-      const len    = 60 + Math.random() * 100;
-      const delay  = (0.05 + Math.random() * 0.15).toFixed(2) + 's';
-      const dur    = (0.4 + Math.random() * 0.3).toFixed(2) + 's';
-      st.style.cssText = `top:${cy}px;left:${cx}px;width:${len}px;--angle:${angle}deg;--dur:${dur};--delay:${delay};`;
-      tr.appendChild(st);
-      setTimeout(() => st.classList.add('fire'), 10);
-    }
-
-    // ── PHASE 2 (200ms) : 3 ondes de choc ────────────────────────────────
+    // 2 — Anneaux depuis le centre (300ms)
+    //     Les anneaux partent d'une taille visible (100px) et scalent jusqu'à couvrir l'écran
     setTimeout(() => {
-      document.getElementById('bt-ring').classList.add('fire');
-      document.getElementById('bt-ring-2').classList.add('fire');
-      document.getElementById('bt-ring-3').classList.add('fire');
-      // Léger shake du splash
-      splash.style.animation = 'screenShake 0.5s ease';
-    }, 200);
+      document.getElementById('bt-ring-a').classList.add('fire');
+      document.getElementById('bt-ring-b').classList.add('fire');
+    }, 300);
 
-    // ── PHASE 3 (500ms) : 3 slashs diagonaux ─────────────────────────────
+    // 3 — Contenu du splash s'efface doucement (650ms)
     setTimeout(() => {
-      document.getElementById('bt-slash').classList.add('fire');
-      document.getElementById('bt-slash-2').classList.add('fire');
-      document.getElementById('bt-slash-3').classList.add('fire');
-    }, 500);
+      const content = splash.querySelector('.splash-content');
+      const tap     = splash.querySelector('.splash-tap');
+      if (content) {
+        content.style.transition = 'opacity 0.5s ease, transform 0.5s cubic-bezier(0.4,0,1,1)';
+        content.style.opacity    = '0';
+        content.style.transform  = 'scale(1.06) translateY(-12px)';
+      }
+      if (tap) { tap.style.opacity = '0'; tap.style.transition = 'opacity 0.3s'; }
+    }, 650);
 
-    // ── PHASE 4 (700ms) : implosion du splash ─────────────────────────────
+    // 4 — Voile final APRÈS les anneaux (1100ms)
     setTimeout(() => {
-      splash.style.transition = 'transform 0.5s cubic-bezier(0.55, 0, 1, 1), opacity 0.45s ease';
-      splash.style.transform  = 'scale(0.88)';
-      splash.style.opacity    = '0.15';
-    }, 700);
+      document.getElementById('bt-veil').classList.add('fire');
+    }, 1100);
 
-    // ── PHASE 5 (850ms) : flash rouge total ──────────────────────────────
-    setTimeout(() => {
-      document.getElementById('bt-flash').classList.add('fire');
-    }, 850);
-
-    // ── PHASE 6 (1750ms) : dismiss → dashboard TraX ─────────────────────
+    // 5 — Dashboard (1600ms)
     setTimeout(() => {
       splash.style.display = 'none';
       tr.style.display     = 'none';
       sessionStorage.setItem('trax-splash-session-seen', 'true');
-    }, 1750);
+    }, 1600);
   }
 
   function dismissSplash() {
