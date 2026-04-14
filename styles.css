@@ -651,6 +651,16 @@
     margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 8px;
   }
   .velo-btn:active { opacity: 0.7; }
+  .basicfit-btn {
+    width: 100%; padding: 14px; border: 1px solid rgba(194,59,59,0.4); border-radius: 4px;
+    background: rgba(194,59,59,0.08); color: var(--red);
+    font-size: 12px; font-weight: 900; cursor: pointer; font-family: 'Cinzel', serif;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 10px;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .basicfit-btn:active { background: rgba(194,59,59,0.18); border-color: rgba(194,59,59,0.7); }
+
   .ui-icon { height: 28px; width: auto; vertical-align: middle; }
   .ui-icon-sm { height: 22px; }
   .ui-icon-lg { height: 40px; }

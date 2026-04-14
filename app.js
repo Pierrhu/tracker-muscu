@@ -453,6 +453,9 @@ function renderWorkout() {
   // Cycling button
   html += `<button class="velo-btn" onclick="openVeloModal()">🚴 Ajouter une sortie vélo</button>`;
 
+  // Basic Fit battle button
+  html += `<button class="basicfit-btn" onclick="openBasicFit()">⚔️ Aller au champ de bataille</button>`;
+
   document.getElementById('page-workout').innerHTML = html;
 
   // Swipe gauche sur les cartes d'exo pour ouvrir le panneau info
@@ -2040,6 +2043,20 @@ function confirmImport() {
 }
 
 // ---- CYCLING SESSIONS ----
+function openBasicFit() {
+  // Tentative d'ouverture de l'app Basic Fit via deep link
+  const deepLink = 'basicfit://';
+  const appStoreUrl = 'https://www.basic-fit.com/fr-fr/app';
+
+  // On tente le deep link, avec fallback vers le site après 1.5s
+  const fallbackTimer = setTimeout(() => {
+    window.open(appStoreUrl, '_blank');
+  }, 1500);
+
+  window.addEventListener('blur', () => clearTimeout(fallbackTimer), { once: true });
+  window.location.href = deepLink;
+}
+
 function openVeloModal() {
   document.getElementById('velo-date').value = new Date().toISOString().slice(0, 10);
   document.getElementById('velo-distance').value = '';
