@@ -448,7 +448,7 @@
 
   /* REST TIMER */
   .rest-timer {
-    position: fixed; bottom: 68px; left: 50%; transform: translateX(-50%);
+    position: fixed; bottom: calc(68px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%);
     width: calc(100% - 28px); max-width: 452px; z-index: 90;
     background: var(--card); border: 1px solid var(--border); border-radius: 14px;
     padding: 12px 16px; display: none;

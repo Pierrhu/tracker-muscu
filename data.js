@@ -3,29 +3,29 @@ const PROGRAM = [
   {
     id:'A', name:'Jour A', subtitle:'Force Horizontale', accent:'#C23B3B', when:'Lundi',
     exercises: [
-      {id:'a1',name:'Développé couché barre',format:'Top set 3-5 + 3×6-8',sets:4,topSet:true,rankKey:'bench',
+      {id:'a1',name:'Développé couché barre',format:'3 chauffe + Top set 3-5 + 2×6-8',sets:3,topSet:true,rankKey:'bench',
         info:{
           gif:'gifs/developpe-couche-barre.gif',
           execution:[
+            'Échauffement : 3 séries progressives (barre à vide ×10, ~50% ×6, ~70% ×3) pour préparer les articulations et le SNC.',
             'Pieds au sol, fessiers et haut du dos en contact avec le banc, léger arc thoracique naturel.',
             'Prise légèrement plus large que les épaules, poignets droits alignés avec les avant-bras.',
-            'Descente contrôlée (2-3s) jusqu\'au bas des pecs, coudes à ~45° du corps.',
-            'Poussée explosive en serrant les pecs, verrouiller en haut sans hyper-extension des coudes.',
-            'Inspirer à la descente, expirer à la poussée. Garder les omoplates serrées tout du long.'
+            'Top set : charge max, 3-5 reps. Descente contrôlée (2-3s), poussée explosive.',
+            'Back-off : ~85% du top set, 6-8 reps. Garder les omoplates serrées tout du long.'
           ],
-          interet:'Mouvement roi du développement des pectoraux. Placé en top set (3-5 reps) en ouverture de séance pour maximiser la surcharge progressive quand le système nerveux est frais. C\'est ton marqueur de force principal sur le push horizontal.'
+          interet:'Mouvement roi du développement des pectoraux. 3 séries de chauffe progressive puis 1 top set lourd + 2 back-off. Format réduit à 3 séries de travail pour tenir dans l\'heure avec l\'échauffement. C\'est ton marqueur de force principal.'
         }},
-      {id:'a2',name:'Rowing barre pronation',format:'Top set 3-5 + 3×6-8',sets:4,topSet:true,rankKey:'row',
+      {id:'a2',name:'Rowing barre pronation',format:'1-2 chauffe + Top set 3-5 + 2×6-8',sets:3,topSet:true,rankKey:'row',
         info:{
           gif:'gifs/rowing-barre-pronation.gif',
           execution:[
+            'Échauffement : 1-2 séries légères (~50-60%) car le corps est déjà chaud du bench.',
             'Pieds largeur de hanches, genoux légèrement fléchis, buste penché à ~45° (pas plus bas).',
             'Prise pronation (paumes vers le bas) légèrement plus large que les épaules.',
             'Tirer la barre vers le nombril en serrant les omoplates, coudes le long du corps.',
-            'Descente contrôlée, bras quasi-tendus en bas. Pas d\'élan avec le buste.',
-            'Gainage abdominal constant pour protéger le bas du dos.'
+            'Descente contrôlée, bras quasi-tendus en bas. Pas d\'élan avec le buste.'
           ],
-          interet:'Mouvement composé lourd pour le dos en épaisseur. En top set juste après le bench pour alterner push/pull et optimiser le ratio force du dos vs pecs. La prise pronation cible davantage les rhomboïdes et trapèzes moyens.'
+          interet:'Mouvement composé lourd pour le dos en épaisseur. Moins de chauffe nécessaire car le corps est déjà préparé par le bench. 1 top set + 2 back-off pour équilibrer le volume push/pull sans dépasser l\'heure.'
         }},
       {id:'a3',name:'Développé incliné DB 30°',format:'3×8-10',sets:3,
         info:{
