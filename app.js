@@ -2042,33 +2042,33 @@ function confirmImport() {
   render();
 }
 
-// ---- CYCLING SESSIONS ----
 function openBasicFit() {
-  // On définit les deux types de liens (Android et Universel)
   const isAndroid = /Android/i.test(navigator.userAgent);
-  const deepLink = isAndroid 
-    ? 'intent://#Intent;package=com.basicfit.fr;scheme=basicfit;end;' 
-    : 'basicfit://';
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-  // 1. Créer un lien invisible
-  const a = document.createElement('a');
-  a.href = deepLink;
-  
-  // 2. Masquer le splash screen de ton tracker
+  // 1. Masquer le splash screen immédiatement pour que ton tracker soit prêt
   const splash = document.getElementById('splash-screen');
   if (splash) splash.style.display = 'none';
 
-  // 3. Forcer le clic sur le lien
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-
-  // 4. Fallback : si l'app n'est pas là, on va sur le site après 2 secondes
-  setTimeout(() => {
-    if (!document.hidden) {
-      window.location.href = 'https://www.basic-fit.com/fr-fr/app';
-    }
-  }, 2000);
+  if (isAndroid) {
+    // Sur Android, on utilise le format "Intent" qui est le seul à forcer l'app
+    window.location.href = "intent://#Intent;package=com.basicfit.fr;scheme=basicfit;end;";
+  } 
+  else if (isIOS) {
+    // Sur iOS, on tente le schéma direct
+    window.location.href = "basicfit://";
+    
+    // Fallback pour iOS si l'app n'est pas là (on évite le 404 en allant sur le store)
+    setTimeout(() => {
+      if (!document.hidden) {
+        window.location.href = "https://apps.apple.com/fr/app/basic-fit/id1048254718";
+      }
+    }, 2000);
+  } 
+  else {
+    // Si tu es sur PC ou autre
+    window.open("https://www.basic-fit.com/fr-fr/app", "_blank");
+  }
 }
 
 function openVeloModal() {
