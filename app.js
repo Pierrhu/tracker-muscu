@@ -2045,33 +2045,28 @@ function confirmImport() {
 function openBasicFit() {
   const ua = navigator.userAgent;
   const isAndroid = /Android/i.test(ua);
-  const isIOS = /iPhone|iPad|iPod/i.test(ua);
+  const isIOS     = /iPhone|iPad|iPod/i.test(ua);
 
-  const IOS_STORE   = 'https://apps.apple.com/fr/app/basic-fit/id1048254718';
-  const AND_STORE   = 'https://play.google.com/store/apps/details?id=com.basicfit.fr';
-  // Android intent — pas de point-virgule après "end"
-  const AND_INTENT  = 'intent://home#Intent;scheme=basicfit;package=com.basicfit.fr;end';
+  // Liens universels — fiables sur tous les appareils.
+  // Sur Android : ouvre le Play Store, puis "Ouvrir" si l'app est installée.
+  // Sur iOS     : tente le schéma direct, sinon App Store.
+  const IOS_STORE = 'https://apps.apple.com/fr/app/basic-fit/id1048254718';
+  const AND_STORE = 'https://play.google.com/store/apps/details?id=com.basicfit.fr';
 
   if (isAndroid) {
-    // Intent URI : ouvre l'app directement si installée,
-    // sinon Android propose d'aller sur le Play Store automatiquement
-    window.location.href = AND_INTENT;
-    // Filet de sécurité : si toujours visible après 2s → Play Store
-    setTimeout(() => {
-      if (!document.hidden) window.location.href = AND_STORE;
-    }, 2000);
+    // Pas d'intent URI (cause "élément introuvable") —
+    // le Play Store détecte si l'app est installée et propose de l'ouvrir.
+    window.open(AND_STORE, '_blank');
   }
   else if (isIOS) {
-    // Tenter le schéma universel Basic Fit
+    // Tenter le deep link, fallback App Store si non installée
     window.location.href = 'basicfit://';
-    // Si l'app n'est pas installée, document reste visible → App Store
     setTimeout(() => {
       if (!document.hidden) window.location.href = IOS_STORE;
     }, 1500);
   }
   else {
-    // Desktop → App Store iOS (ou Play Store selon préférence)
-    window.open(IOS_STORE, '_blank');
+    window.open(AND_STORE, '_blank');
   }
 }
 

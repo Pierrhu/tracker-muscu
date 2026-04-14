@@ -424,18 +424,16 @@
     const isAndroid = /Android/i.test(ua);
     const isIOS     = /iPhone|iPad|iPod/i.test(ua);
 
-    const IOS_STORE  = 'https://apps.apple.com/fr/app/basic-fit/id1048254718';
-    const AND_STORE  = 'https://play.google.com/store/apps/details?id=com.basicfit.fr';
-    const AND_INTENT = 'intent://home#Intent;scheme=basicfit;package=com.basicfit.fr;end';
+    const IOS_STORE = 'https://apps.apple.com/fr/app/basic-fit/id1048254718';
+    const AND_STORE = 'https://play.google.com/store/apps/details?id=com.basicfit.fr';
 
     if (isAndroid) {
-      window.location.href = AND_INTENT;
-      setTimeout(() => { if (!document.hidden) window.location.href = AND_STORE; }, 2000);
+      window.open(AND_STORE, '_blank');
     } else if (isIOS) {
       window.location.href = 'basicfit://';
       setTimeout(() => { if (!document.hidden) window.location.href = IOS_STORE; }, 1500);
     } else {
-      window.open(IOS_STORE, '_blank');
+      window.open(AND_STORE, '_blank');
     }
   }
 
