@@ -2051,22 +2051,24 @@ function openBasicFit() {
   // Sur Android : ouvre le Play Store, puis "Ouvrir" si l'app est installée.
   // Sur iOS     : tente le schéma direct, sinon App Store.
   const IOS_STORE = 'https://apps.apple.com/fr/app/basic-fit/id1048254718';
-  const AND_STORE = 'https://play.google.com/store/apps/details?id=com.basicfit.fr';
+  const AND_STORE = 'https://play.google.com/store/apps/details?id=com.basicfit.trainingApp';
 
   if (isAndroid) {
-    // Pas d'intent URI (cause "élément introuvable") —
-    // le Play Store détecte si l'app est installée et propose de l'ouvrir.
-    window.open(AND_STORE, '_blank');
+    // Intent URI avec le bon package → ouvre l'app directement
+    window.location.href = 'intent://#Intent;package=com.basicfit.trainingApp;end';
+    // Fallback : si l'app n'est pas installée, Play Store au bout de 2s
+    setTimeout(() => {
+      if (!document.hidden) window.location.href = AND_STORE;
+    }, 2000);
   }
   else if (isIOS) {
-    // Tenter le deep link, fallback App Store si non installée
     window.location.href = 'basicfit://';
     setTimeout(() => {
       if (!document.hidden) window.location.href = IOS_STORE;
     }, 1500);
   }
   else {
-    window.open(AND_STORE, '_blank');
+    window.location.href = AND_STORE;
   }
 }
 
