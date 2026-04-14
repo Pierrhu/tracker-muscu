@@ -182,29 +182,77 @@
   }
 
   /* Citation */
-  .splash-quote {
-    margin-top: 36px;
+  /* MISSION BRIEFING */
+  .splash-mission {
+    margin-top: 28px;
     text-align: center;
     max-width: 300px;
     opacity: 0;
     animation: splashItemIn 0.8s ease 0.85s forwards;
   }
-  .splash-quote-text {
-    font-family: 'IM Fell English', serif;
-    font-style: italic;
-    font-size: clamp(16px, 4.5vw, 19px);
-    color: rgba(221,221,224,0.85);
-    line-height: 1.55;
-    letter-spacing: 0.01em;
+  .splash-mission-label {
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    font-weight: 400;
+    color: rgba(194,59,59,0.55);
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
   }
-  .splash-quote-author {
+  .splash-mission-day {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(22px, 6vw, 28px);
+    font-weight: 700;
+    color: #EDEDF0;
+    letter-spacing: 0.08em;
+    line-height: 1;
+    text-shadow: 0 0 30px rgba(194,59,59,0.3);
+  }
+  .splash-mission-sub {
     font-family: 'Cinzel', serif;
     font-size: 9px;
     font-weight: 400;
-    color: rgba(194,59,59,0.6);
-    letter-spacing: 0.3em;
+    color: var(--accent, rgba(194,59,59,0.7));
+    letter-spacing: 0.25em;
     text-transform: uppercase;
-    margin-top: 14px;
+    margin-top: 6px;
+  }
+  .splash-mission-divider {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 14px auto;
+    width: 160px;
+  }
+  .splash-mission-divider-line {
+    flex: 1;
+    height: 1px;
+    background: var(--accent, rgba(194,59,59,0.3));
+    opacity: 0.4;
+  }
+  .splash-mission-divider-diamond {
+    width: 5px;
+    height: 5px;
+    background: var(--accent, rgba(194,59,59,0.5));
+    transform: rotate(45deg);
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+  .splash-mission-exos {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .splash-mission-exo {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(221,221,224,0.55);
+    letter-spacing: 0.02em;
+  }
+  .splash-mission-exo::before {
+    content: '—  ';
+    color: rgba(194,59,59,0.4);
   }
 
   /* Invite à toucher */
@@ -317,9 +365,16 @@
       <div class="splash-ornament-line"></div>
     </div>
 
-    <div class="splash-quote">
-      <div class="splash-quote-text" id="splash-quote-text"></div>
-      <div class="splash-quote-author" id="splash-quote-author"></div>
+    <div class="splash-mission" id="splash-mission">
+      <div class="splash-mission-label">Ordre de mission</div>
+      <div class="splash-mission-day" id="splash-mission-day">—</div>
+      <div class="splash-mission-sub" id="splash-mission-sub"></div>
+      <div class="splash-mission-divider">
+        <span class="splash-mission-divider-line"></span>
+        <span class="splash-mission-divider-diamond"></span>
+        <span class="splash-mission-divider-line"></span>
+      </div>
+      <div class="splash-mission-exos" id="splash-mission-exos"></div>
     </div>
   </div>
 
@@ -327,118 +382,84 @@
 </div>
 
 <script>
-  const SPLASH_QUOTES = [
-    // ── Sparte & Grèce antique ──
-    { text: "L'homme qui transpire en paix saigne moins en guerre.", author: "Léonidas I, Roi de Sparte" },
-    { text: "Revenez avec votre bouclier, ou sur votre bouclier.", author: "Mère spartiate à son fils" },
-    { text: "Un Spartiate ne demande pas combien ils sont, mais où ils sont.", author: "Agésilas II de Sparte" },
-    { text: "La douleur est temporaire. La gloire est éternelle.", author: "Proverbe spartiate" },
-    { text: "Viens les prendre.", author: "Léonidas I aux Perses, aux Thermopyles" },
-    { text: "La sueur épargne le sang.", author: "Dicton spartiate" },
-    { text: "Celui qui résiste quand tout cède est le véritable vainqueur.", author: "Thucydide" },
-    { text: "Ne pas subir la douleur, c'est ne jamais avoir vécu.", author: "Pindare" },
-    { text: "La victoire appartient à celui qui persévère le plus longtemps.", author: "Épictète" },
-    { text: "Le corps endure ce que l'esprit refuse de céder.", author: "Xénophon" },
-    { text: "Ce n'est pas la taille du chien dans le combat, c'est la taille du combat dans le chien.", author: "Proverbe grec" },
-    { text: "La force ne vient pas du corps. Elle vient de la volonté indomptable de l'âme.", author: "Plutarque" },
-    { text: "L'excellence n'est pas un acte, c'est une habitude.", author: "Aristote" },
-
-    // ── Rome antique ──
-    { text: "Fortes fortuna adiuvat — La chance sourit aux audacieux.", author: "Térence" },
-    { text: "Per aspera ad astra — Par l'effort vers les étoiles.", author: "Sénèque" },
-    { text: "Dum spiro, spero — Tant que je respire, j'espère.", author: "Cicéron" },
-    { text: "Ce qui ne me détruit pas me rend plus fort.", author: "Marc Aurèle, Méditations" },
-    { text: "Tu as du pouvoir sur ton esprit, pas sur les événements extérieurs. Réalise-le et tu trouveras la force.", author: "Marc Aurèle" },
-    { text: "Les obstacles à l'action font avancer l'action. Ce qui se dresse sur le chemin devient le chemin.", author: "Marc Aurèle" },
-    { text: "Supporte et abstiens-toi.", author: "Épictète, stoïcien" },
-    { text: "Si tu veux quelque chose que tu n'as jamais eu, fais quelque chose que tu n'as jamais fait.", author: "Sénèque" },
-    { text: "Bene vixit qui bene latuit — On vit bien qui se cache bien dans l'effort quotidien.", author: "Ovide" },
-    { text: "Gutta cavat lapidem — La goutte creuse la pierre, non par la force, mais par la constance.", author: "Ovide" },
-    { text: "La gloire n'est pas de ne jamais tomber, mais de se relever à chaque chute.", author: "Sénèque" },
-
-    // ── Philosophie & sagesse universelle ──
-    { text: "Le seul mauvais entraînement est celui qu'on n'a pas fait.", author: "Proverbe de salle" },
-    { text: "Sois plus dur que la douleur que tu ressens.", author: "Proverbe de culturiste" },
-    { text: "Le champion n'est pas fait dans la salle. Il est fait de ce qu'il a à l'intérieur.", author: "Muhammad Ali" },
-    { text: "Je ne compte mes abdominaux qu'à partir du moment où ça fait mal.", author: "Muhammad Ali" },
-    { text: "La souffrance est l'agent du changement.", author: "Proverbe de force athlétique" },
-    { text: "Chaque répétition que tu fais quand tu veux t'arrêter est celle qui te construit.", author: "Arnold Schwarzenegger" },
-    { text: "La douleur que tu ressens aujourd'hui est la force que tu ressentiras demain.", author: "Arnold Schwarzenegger" },
-    { text: "Les poids ne mentent jamais.", author: "Mark Bell, powerlifter" },
-    { text: "Ta seule limite, c'est toi-même.", author: "Proverbe athlétique" },
-    { text: "La douleur est faiblesse qui quitte le corps.", author: "Marines américains" },
-    { text: "Soulève lourd. Mange bien. Dors profondément. Répète.", author: "Code du guerrier moderne" },
-    { text: "Le succès, c'est tomber sept fois et se relever huit.", author: "Proverbe japonais" },
-    { text: "La discipline est le pont entre les objectifs et l'accomplissement.", author: "Jim Rohn" },
-    { text: "On devient ce qu'on répète.", author: "Will Durant, sur Aristote" },
-
-    // ── Stoïcisme & philosophie du dépassement ──
-    { text: "Comporte-toi comme un athlète de la vertu : entraîne-toi chaque jour.", author: "Épictète" },
-    { text: "Fais bien ce que tu fais maintenant.", author: "Marc Aurèle" },
-    { text: "La résistance révèle le caractère.", author: "Épictète" },
-    { text: "Ce n'est pas parce que les choses sont difficiles que nous n'osons pas, c'est parce que nous n'osons pas qu'elles sont difficiles.", author: "Sénèque" },
-    { text: "Concentre-toi sur ce qui dépend de toi.", author: "Épictète, Manuel" },
-    { text: "Aime la difficulté.", author: "Marc Aurèle" },
-    { text: "La vertu s'acquiert par l'effort quotidien, non par les discours.", author: "Sénèque" },
-
-    // ── Bushido & guerriers orientaux ──
-    { text: "Nul ne connaît vraiment sa propre force jusqu'à ce qu'elle ait été mise à l'épreuve.", author: "Miyamoto Musashi" },
-    { text: "Aujourd'hui est la victoire sur toi-même d'hier ; demain est ta victoire sur les hommes moins habiles.", author: "Miyamoto Musashi" },
-    { text: "Le Bushido, c'est réaliser que tu es déjà mort.", author: "Code Bushido samouraï" },
-    { text: "Un samouraï sans épée est comme un samouraï avec une épée, mais sans bras.", author: "Proverbe japonais" },
-    { text: "La montagne ne bouge pas. Sois la montagne.", author: "Zen japonais" },
-
-    // ── Modernes & culturistes ──
-    { text: "Les muscles ne se construisent pas dans la salle. Ils se construisent dans le lit, quand tu dors.", author: "Ronnie Coleman" },
-    { text: "Everybody wants to be a bodybuilder, but nobody wants to lift no heavy-ass weights.", author: "Ronnie Coleman" },
-    { text: "Blood, sweat and respect. Le premier deux, tu les donnes. Le dernier, tu le mérites.", author: "Dwayne Johnson" },
-    { text: "Le seul endroit où le succès vient avant le travail, c'est dans le dictionnaire.", author: "Vince Lombardi" },
-    { text: "Je rate 100% des tirs que je ne tente pas — et 100% des séances que je ne fais pas.", author: "Proverbe de salle, d'après Wayne Gretzky" },
-    { text: "Le but n'est pas de se surpasser une seule fois. C'est de se surpasser chaque jour.", author: "Proverbe athlétique" },
-    { text: "Chaque fois que tu soulèves, tu votes pour la personne que tu veux devenir.", author: "James Clear, Atomic Habits" },
-    { text: "Tu n'as pas à être extrême, juste constant.", author: "Proverbe de progression" },
+  // ── Programme embarqué pour le briefing ──
+  const MISSIONS = [
+    {
+      id: 'A', name: 'Jour A', subtitle: 'Force Horizontale', accent: '#C23B3B',
+      exos: ['Développé couché barre', 'Rowing barre pronation', 'Développé incliné DB', 'Tirage vertical large', 'Élévations latérales', 'Curl EZ / Ext. corde']
+    },
+    {
+      id: 'B', name: 'Jour B', subtitle: 'Force Verticale', accent: '#2D7DD2',
+      exos: ['Développé militaire', 'Tirage vertical neutre', 'Rowing DB unilatéral', 'Latérales poulie basse', 'Face pull corde']
+    },
+    {
+      id: 'C', name: 'Jour C', subtitle: 'Volume & Rattrapage', accent: '#1A9E8F',
+      exos: ['Développé couché DB', 'Tirage horizontal serré', 'Écarté poulie', 'Latérales drop set', 'Face pull corde', 'Curl marteau / Ext.']
+    }
   ];
 
-(function() {
-    // Utilisation de sessionStorage : l'écran revient si l'app est fermée/relancée
-    const SESSION_KEY = 'trax-splash-session-seen';
-    const QUOTE_KEY   = 'trax-last-quote';
-    
-    const alreadySeenInSession = sessionStorage.getItem(SESSION_KEY);
-    const lastIdx = parseInt(localStorage.getItem(QUOTE_KEY) || '-1', 10);
+  function showMission(dayIdx) {
+    const m = MISSIONS[dayIdx] || MISSIONS[0];
+    const dayEl     = document.getElementById('splash-mission-day');
+    const subEl     = document.getElementById('splash-mission-sub');
+    const exosEl    = document.getElementById('splash-mission-exos');
+    const missionEl = document.getElementById('splash-mission');
 
-    // Si déjà vu durant cette session active, on cache immédiatement
-    if (alreadySeenInSession) {
+    if (!dayEl) return;
+
+    // Apply accent color to the whole mission block
+    missionEl.style.setProperty('--accent', m.accent);
+
+    dayEl.textContent = m.name.toUpperCase();
+    dayEl.style.textShadow = `0 0 30px ${m.accent}55`;
+
+    subEl.textContent = m.subtitle.toUpperCase();
+    subEl.style.color = m.accent;
+
+    exosEl.innerHTML = m.exos.map(e =>
+      `<div class="splash-mission-exo">${e}</div>`
+    ).join('');
+  }
+
+  // Lecture du dayIdx depuis IndexedDB
+  (function() {
+    const SESSION_KEY = 'trax-splash-session-seen';
+    if (sessionStorage.getItem(SESSION_KEY)) {
       document.getElementById('splash-screen').style.display = 'none';
       return;
     }
 
-    // Choisir une citation au hasard
-    let idx;
-    do { 
-      idx = Math.floor(Math.random() * SPLASH_QUOTES.length); 
-    } while (idx === lastIdx && SPLASH_QUOTES.length > 1);
-    
-    localStorage.setItem(QUOTE_KEY, idx.toString());
-
-    const q = SPLASH_QUOTES[idx];
-    document.getElementById('splash-quote-text').textContent   = '\u00AB\u00A0' + q.text + '\u00A0\u00BB';
-    document.getElementById('splash-quote-author').textContent = '\u2014 ' + q.author;
+    // Tenter de lire depuis IndexedDB
+    try {
+      const req = indexedDB.open('tracker-muscu-db', 1);
+      req.onsuccess = function(e) {
+        try {
+          const db = e.target.result;
+          const tx = db.transaction('state', 'readonly');
+          const store = tx.objectStore('state');
+          const getReq = store.get('tracker-muscu-state');
+          getReq.onsuccess = function() {
+            const saved = getReq.result;
+            const dayIdx = (saved && typeof saved.dayIdx === 'number') ? saved.dayIdx : 0;
+            showMission(dayIdx);
+          };
+          getReq.onerror = function() { showMission(0); };
+        } catch(err) { showMission(0); }
+      };
+      req.onerror = function() { showMission(0); };
+    } catch(e) { showMission(0); }
   })();
 
   function dismissSplash() {
     const el = document.getElementById('splash-screen');
     if (!el || el.style.display === 'none') return;
     el.classList.add('fade-out');
-    
-    // On enregistre qu'on l'a vu pour la session en cours
     sessionStorage.setItem('trax-splash-session-seen', 'true');
-    
     setTimeout(() => { el.style.display = 'none'; }, 700);
   }
 
-  // Disparaît automatiquement après 5s
-  setTimeout(() => { dismissSplash(); }, 5000);
+  // Disparaît automatiquement après 6s
+  setTimeout(() => { dismissSplash(); }, 6000);
 </script>
 
 <div id="toast" class="toast"></div>
@@ -488,6 +509,57 @@
     <button class="btn-primary" id="import-confirm-btn" style="background:var(--blue);display:none" onclick="confirmImport()">Importer les séances ✓</button>
     <button class="modal-cancel" onclick="closeImportModal()">Annuler</button>
   </div>
+</div>
+
+<!-- VICTORY OVERLAY -->
+<div class="victory-overlay hidden" id="victory-overlay" onclick="closeVictory()">
+  <div class="victory-bg"></div>
+  <div class="victory-lines"></div>
+  <div class="victory-content">
+    <div class="victory-emblem">
+      <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M40 4 L72 16 L72 44 Q72 64 40 76 Q8 64 8 44 L8 16 Z"
+              fill="none" stroke="var(--victory-accent, #C23B3B)" stroke-width="1.5" opacity="0.9"/>
+        <path d="M40 10 L66 20 L66 43 Q66 60 40 71 Q14 60 14 43 L14 20 Z"
+              fill="rgba(194,59,59,0.06)" stroke="var(--victory-accent, #C23B3B)" stroke-width="0.8" opacity="0.5"/>
+        <path d="M28 57 L40 28 L52 57" stroke="var(--victory-accent, #C23B3B)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <line x1="32" y1="50" x2="48" y2="50" stroke="var(--victory-accent, #C23B3B)" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+      </svg>
+    </div>
+
+    <div class="victory-label">Séance accomplie</div>
+    <div class="victory-day" id="victory-day">JOUR A</div>
+
+    <div class="victory-ornament">
+      <div class="victory-ornament-line"></div>
+      <div class="victory-ornament-dot"></div>
+      <div class="victory-ornament-line"></div>
+    </div>
+
+    <div class="victory-stats">
+      <div class="victory-stat">
+        <div class="victory-stat-val" id="victory-sets">—</div>
+        <div class="victory-stat-label">Séries</div>
+      </div>
+      <div class="victory-stat-sep"></div>
+      <div class="victory-stat">
+        <div class="victory-stat-val" id="victory-exos">—</div>
+        <div class="victory-stat-label">Exercices</div>
+      </div>
+      <div class="victory-stat-sep"></div>
+      <div class="victory-stat">
+        <div class="victory-stat-val" id="victory-time">—</div>
+        <div class="victory-stat-label">Durée</div>
+      </div>
+    </div>
+
+    <div class="victory-vol-wrap">
+      <div class="victory-vol-label">Volume total</div>
+      <div class="victory-vol-val" id="victory-vol">— kg</div>
+    </div>
+
+  </div>
+  <div class="victory-tap">Toucher pour continuer</div>
 </div>
 
 <!-- WEEKLY RECAP -->

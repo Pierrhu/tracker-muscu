@@ -300,7 +300,7 @@ function setView(v) { state.view = v; render(); }
 // ---- WORKOUT ----
 function renderWorkout() {
   const day = PROGRAM[state.dayIdx];
-  let html = '';
+  let html = '<h2 class="page-title">Séance</h2>';
 
   // Streak banner
   const streak = computeStreak();
@@ -339,7 +339,7 @@ function renderWorkout() {
   });
   html += '</div>';
 
-  html += `<div style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:12px">${day.subtitle}</div>`;
+  html += `<div class="warrior-section">${day.subtitle}</div>`;
 
   // Compute suggestions for this day
   const suggestions = getSuggestions(day);
@@ -445,8 +445,9 @@ function renderWorkout() {
   html += `<button class="btn-primary" style="background:${day.accent}" onclick="finishSession('${day.id}')">Terminer la séance ✓</button>`;
 
   // Tractions reminder
-  html += `<div class="card" style="margin-top:10px;font-size:12px;color:var(--text3)">
-    <strong style="color:var(--text2)">+ Objectif tractions :</strong> 2×3-5 négatives (5s descente) en fin de séance. Alterner avec dips négatives.
+  html += `<div class="card" style="margin-top:10px;border-left:2px solid rgba(194,59,59,0.4);padding-left:12px;font-size:12px;color:var(--text3)">
+    <div style="font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:rgba(194,59,59,0.6);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:4px">Ordre supplémentaire</div>
+    2×3-5 tractions négatives (5s descente) en fin de séance. Alterner avec dips.
   </div>`;
 
   // Cycling button
@@ -723,21 +724,80 @@ function finishSession(dayId) {
 
   if (prs.length) {
     state._lastPRs = prs;
-    showToast(`🏆 ${prs.length} PR${prs.length>1?'s':''} battu${prs.length>1?'s':''}  !`, 'pr');
-  } else {
-    showToast('Séance enregistrée ! 💪');
   }
-  // Button success animation
-  document.querySelectorAll('.btn-primary').forEach(btn => {
-    btn.classList.add('success');
-    setTimeout(() => btn.classList.remove('success'), 600);
-  });
+
+  // Show victory overlay
+  const elapsed = sessionStart > 0 ? Math.floor((Date.now() - sessionStart) / 1000) : 0;
+  showVictory(day, entry, elapsed, prs);
+
   render();
+}
+
+function showVictory(day, entry, elapsedSec, prs) {
+  const overlay = document.getElementById('victory-overlay');
+  if (!overlay) return;
+
+  // Compute stats
+  const sets = Object.keys(entry.sets).length;
+  const exosCompleted = new Set(Object.keys(entry.sets).map(k => k.split('_')[0])).size;
+  const min = Math.floor(elapsedSec / 60);
+  const sec = elapsedSec % 60;
+  const timeStr = elapsedSec > 0 ? `${min}:${sec.toString().padStart(2,'0')}` : '—';
+
+  // Volume: sum kg * reps for all sets
+  let vol = 0;
+  Object.values(entry.sets).forEach(s => {
+    const kg = parseFloat(s.kg)||0;
+    const reps = parseInt(s.reps)||0;
+    vol += kg * reps;
+  });
+
+  // Apply accent color
+  const accent = day.accent;
+  // Extract RGB components for CSS var
+  const hex = accent.replace('#','');
+  const r = parseInt(hex.substr(0,2),16);
+  const g = parseInt(hex.substr(2,2),16);
+  const b = parseInt(hex.substr(4,2),16);
+
+  overlay.style.setProperty('--victory-accent', accent);
+  overlay.style.setProperty('--va-rgb', `${r},${g},${b}`);
+
+  document.getElementById('victory-day').textContent = day.name.toUpperCase() + ' — ' + day.subtitle.toUpperCase();
+  document.getElementById('victory-sets').textContent = sets;
+  document.getElementById('victory-exos').textContent = exosCompleted;
+  document.getElementById('victory-time').textContent = timeStr;
+  document.getElementById('victory-vol').textContent = vol > 0 ? vol.toLocaleString('fr-FR') + ' kg' : '—';
+
+  overlay.classList.remove('hidden', 'out');
+  overlay.classList.add('in');
+
+  // If PRs, show PR toast after a delay
+  if (prs && prs.length) {
+    setTimeout(() => {
+      showToast(`🏆 ${prs.length} PR${prs.length>1?'s':''} battu${prs.length>1?'s':''} !`, 'pr');
+    }, 600);
+  }
+}
+
+function closeVictory() {
+  const overlay = document.getElementById('victory-overlay');
+  if (!overlay) return;
+  overlay.classList.remove('in');
+  overlay.classList.add('out');
+  setTimeout(() => {
+    overlay.classList.add('hidden');
+    overlay.classList.remove('out');
+    // Show PR celebration if needed
+    if (state._lastPRs && state._lastPRs.length) {
+      openPRCelebrate(0);
+    }
+  }, 350);
 }
 
 // ---- RANK ----
 function renderRank() {
-  let html = '';
+  let html = '<h2 class="page-title">Rang</h2>';
 
   // Weight banner
   html += `<div class="weight-banner">
@@ -1002,7 +1062,7 @@ function renderExerciseDetail(ex, accent) {
 }
 
 function renderProgress() {
-  let html = '';
+  let html = '<h2 class="page-title">Progrès</h2>';
 
   // Streak card
   const streak = computeStreak();
@@ -1090,7 +1150,8 @@ function renderProgress() {
 // ---- BODY ----
 function renderBody() {
   let html = '<h2 class="page-title">Suivi corporel</h2>';
-  html += '<p class="info-text" style="margin-bottom:14px">Mesure-toi chaque semaine, même jour, le matin à jeun.</p>';
+  html += '<p class="info-text" style="margin-bottom:10px">Mesure-toi chaque semaine, même jour, le matin à jeun.</p>';
+  html += '<div class="warrior-section">Mensurations</div>';
 
   state.bodyStats.forEach((entry, idx) => {
     const dateStr = new Date(entry.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
@@ -1220,7 +1281,7 @@ function updateBody(idx, key, val) {
 
 // ---- HISTORY ----
 function renderHistory() {
-  let html = '<h2 class="page-title">Historique</h2>';
+  let html = '<h2 class="page-title">Historique</h2><div class="warrior-section">Campagnes passées</div><div class="hist-hint">Maintenir pour modifier</div>';
 
   // Merge muscu, velo and body stats into a unified timeline
   const allEntries = [];
@@ -1253,15 +1314,16 @@ function renderHistory() {
         const d = PROGRAM.find(p => p.id === h.dayId);
         if (!d) return;
         const setCount = Object.keys(h.sets).length;
-        html += `<div class="hist-card" style="border-left:3px solid ${d.accent}" data-hist-action="openEditSession(${i})">
-          <div style="display:flex;justify-content:space-between;align-items:center">
+        html += `<div class="hist-card hist-card--warrior" style="--hc-accent:${d.accent}" data-hist-action="openEditSession(${i})">
+          <div class="hist-card-header">
             <div>
-              <div style="font-size:13px;font-weight:700;color:${d.accent}">${d.name} — ${d.subtitle}</div>
-              <div style="font-size:11px;color:var(--text3);margin-top:2px">${formatDate(h.date)}</div>
+              <div class="hist-card-title" style="color:${d.accent}">${d.name}</div>
+              <div class="hist-card-sub">${d.subtitle}</div>
+              <div class="hist-card-date">${formatDate(h.date)}</div>
             </div>
-            <div style="text-align:right">
-              <div style="font-size:18px;font-weight:800;color:${d.accent}">${setCount}</div>
-              <div style="font-size:10px;color:var(--text3)">séries</div>
+            <div class="hist-card-count">
+              <span class="hist-card-count-num" style="color:${d.accent}">${setCount}</span>
+              <span class="hist-card-count-label">séries</span>
             </div>
           </div>
           <div class="hist-tags">
@@ -1276,15 +1338,15 @@ function renderHistory() {
         const v = entry.data;
         const vi = entry.idx;
         const typeLabels = { endurance: 'Endurance', long: 'Sortie longue', recup: 'Récup' };
-        html += `<div class="hist-card" style="border-left:3px solid var(--yellow)" data-hist-action="openEditVelo(${vi})">
-          <div style="display:flex;justify-content:space-between;align-items:center">
+        html += `<div class="hist-card hist-card--warrior" style="--hc-accent:var(--yellow)" data-hist-action="openEditVelo(${vi})">
+          <div class="hist-card-header">
             <div>
-              <div style="font-size:13px;font-weight:700;color:var(--yellow)">🚴 Vélo — ${typeLabels[v.type] || v.type}</div>
-              <div style="font-size:11px;color:var(--text3);margin-top:2px">${formatDate(v.date)}</div>
+              <div class="hist-card-title" style="color:var(--yellow)">Vélo — ${typeLabels[v.type] || v.type}</div>
+              <div class="hist-card-date">${formatDate(v.date)}</div>
             </div>
-            <div style="text-align:right">
-              ${v.distance ? `<div style="font-size:18px;font-weight:800;color:var(--yellow)">${v.distance}<span style="font-size:11px;font-weight:600">km</span></div>` : ''}
-              ${v.duration ? `<div style="font-size:10px;color:var(--text3)">${v.duration} min</div>` : ''}
+            <div class="hist-card-count">
+              ${v.distance ? `<span class="hist-card-count-num" style="color:var(--yellow)">${v.distance}</span><span class="hist-card-count-label">km</span>` : ''}
+              ${v.duration ? `<div style="font-size:10px;color:var(--text3);margin-top:2px">${v.duration} min</div>` : ''}
             </div>
           </div>
         </div>`;
@@ -1296,14 +1358,14 @@ function renderHistory() {
         if (b.bras) vals.push(`bras ${b.bras}cm`);
         if (b.poitrine) vals.push(`poit. ${b.poitrine}cm`);
         if (b.taille_cm) vals.push(`taille ${b.taille_cm}cm`);
-        html += `<div class="hist-card" style="border-left:3px solid var(--purple)" data-hist-action="openEditBodyStat(${bi})">
-          <div style="display:flex;justify-content:space-between;align-items:center">
+        html += `<div class="hist-card hist-card--warrior" style="--hc-accent:var(--purple)" data-hist-action="openEditBodyStat(${bi})">
+          <div class="hist-card-header">
             <div>
-              <div style="font-size:13px;font-weight:700;color:var(--purple)">Mesure corporelle</div>
-              <div style="font-size:11px;color:var(--text3);margin-top:2px">${formatDate(b.date)}</div>
+              <div class="hist-card-title" style="color:var(--purple)">Mesure corporelle</div>
+              <div class="hist-card-date">${formatDate(b.date)}</div>
             </div>
-            <div style="text-align:right">
-              ${b.poids ? `<div style="font-size:18px;font-weight:800;color:var(--purple)">${b.poids}<span style="font-size:11px;font-weight:600">kg</span></div>` : ''}
+            <div class="hist-card-count">
+              ${b.poids ? `<span class="hist-card-count-num" style="color:var(--purple)">${b.poids}</span><span class="hist-card-count-label">kg</span>` : ''}
             </div>
           </div>
           ${vals.length ? `<div class="hist-tags">${vals.map(v => `<span class="hist-tag">${v}</span>`).join('')}</div>` : ''}
@@ -1325,28 +1387,59 @@ let editSets = {};
 function initHistSwipe() {
   document.querySelectorAll('[data-hist-action]').forEach(card => {
     const action = card.getAttribute('data-hist-action');
-    let startX = 0, startY = 0, tracking = false;
+    let pressTimer = null;
+    let startY = 0;
+    let cancelled = false;
 
     card.addEventListener('touchstart', e => {
-      startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
-      tracking = true;
+      cancelled = false;
+      card.style.transition = 'transform 0.5s ease, opacity 0.5s ease';
+      pressTimer = setTimeout(() => {
+        if (!cancelled) {
+          card.style.transform = 'scale(0.97)';
+          card.style.opacity = '0.75';
+          setTimeout(() => {
+            card.style.transform = '';
+            card.style.opacity = '';
+            eval(action);
+          }, 120);
+        }
+      }, 500);
     }, { passive: true });
 
     card.addEventListener('touchmove', e => {
-      if (!tracking) return;
       const dy = Math.abs(e.touches[0].clientY - startY);
-      if (dy > 30) tracking = false;
-    }, { passive: true });
-
-    card.addEventListener('touchend', e => {
-      if (!tracking) return;
-      tracking = false;
-      const dx = e.changedTouches[0].clientX - startX;
-      if (dx < -40) {
-        eval(action);
+      if (dy > 12) {
+        cancelled = true;
+        clearTimeout(pressTimer);
+        card.style.transform = '';
+        card.style.opacity = '';
       }
     }, { passive: true });
+
+    card.addEventListener('touchend', () => {
+      cancelled = true;
+      clearTimeout(pressTimer);
+      card.style.transform = '';
+      card.style.opacity = '';
+    }, { passive: true });
+
+    card.addEventListener('touchcancel', () => {
+      cancelled = true;
+      clearTimeout(pressTimer);
+      card.style.transform = '';
+      card.style.opacity = '';
+    }, { passive: true });
+
+    // Desktop support (right-click / long mousedown)
+    let mouseTimer = null;
+    card.addEventListener('mousedown', () => {
+      mouseTimer = setTimeout(() => { eval(action); }, 500);
+    });
+    card.addEventListener('mouseup', () => clearTimeout(mouseTimer));
+    card.addEventListener('mouseleave', () => clearTimeout(mouseTimer));
+    card.addEventListener('contextmenu', e => { e.preventDefault(); eval(action); });
   });
 }
 
