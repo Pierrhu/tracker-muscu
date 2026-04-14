@@ -10,6 +10,236 @@
 <meta name="application-name" content="Tracker Muscu">
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="styles.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cinzel+Decorative:wght@400;700;900&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+
+<style>
+  /* ── SPLASH SCREEN ── */
+  #splash-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #0C0C10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: env(safe-area-inset-top) 32px env(safe-area-inset-bottom);
+    overflow: hidden;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  #splash-screen.fade-out {
+    animation: splashFadeOut 0.7s cubic-bezier(0.4, 0, 1, 1) forwards;
+  }
+
+  @keyframes splashFadeOut {
+    0%   { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.04); pointer-events: none; }
+  }
+
+  /* Arrière-plan texturé et dramatique */
+  .splash-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 50% 10%, rgba(194,59,59,0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 80% 60% at 50% 100%, rgba(194,59,59,0.06) 0%, transparent 60%),
+      #0C0C10;
+  }
+
+  /* Lignes décoratives horizontales */
+  .splash-lines {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    opacity: 0.06;
+  }
+  .splash-lines::before,
+  .splash-lines::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #C23B3B, transparent);
+  }
+  .splash-lines::before { top: 30%; }
+  .splash-lines::after { top: 70%; }
+
+  /* Losange décoratif */
+  .splash-diamond {
+    position: absolute;
+    width: 320px;
+    height: 320px;
+    border: 1px solid rgba(194,59,59,0.08);
+    transform: rotate(45deg);
+    border-radius: 4px;
+    top: 50%;
+    left: 50%;
+    margin: -160px 0 0 -160px;
+    animation: diamondPulse 4s ease-in-out infinite;
+  }
+  .splash-diamond-inner {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    border: 1px solid rgba(194,59,59,0.12);
+    transform: rotate(45deg);
+    border-radius: 3px;
+    top: 50%;
+    left: 50%;
+    margin: -100px 0 0 -100px;
+    animation: diamondPulse 4s ease-in-out infinite 0.5s;
+  }
+  @keyframes diamondPulse {
+    0%,100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+
+  /* Contenu central */
+  .splash-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  /* Logo / Emblème */
+  .splash-emblem {
+    width: 80px;
+    height: 80px;
+    position: relative;
+    margin-bottom: 28px;
+    opacity: 0;
+    animation: splashItemIn 0.9s cubic-bezier(0.34,1.56,0.64,1) 0.2s forwards;
+  }
+
+  /* Bouclier spartiate SVG */
+  .splash-shield {
+    width: 80px;
+    height: 80px;
+    filter: drop-shadow(0 0 20px rgba(194,59,59,0.5));
+  }
+
+  /* Séparateur ornementé */
+  .splash-ornament {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+    opacity: 0;
+    animation: splashItemIn 0.7s ease 0.6s forwards;
+  }
+  .splash-ornament-line {
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(194,59,59,0.6));
+  }
+  .splash-ornament-line:last-child {
+    background: linear-gradient(90deg, rgba(194,59,59,0.6), transparent);
+  }
+  .splash-ornament-dot {
+    width: 5px;
+    height: 5px;
+    background: #C23B3B;
+    transform: rotate(45deg);
+    opacity: 0.8;
+  }
+
+  /* Titre principal */
+  .splash-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(28px, 8vw, 38px);
+    font-weight: 900;
+    color: #EDEDF0;
+    letter-spacing: 0.08em;
+    text-align: center;
+    line-height: 1.1;
+    opacity: 0;
+    animation: splashItemIn 0.8s cubic-bezier(0.34,1.56,0.64,1) 0.4s forwards;
+    text-shadow: 0 0 40px rgba(194,59,59,0.3);
+  }
+  .splash-title span {
+    color: #C23B3B;
+  }
+
+  /* Sous-titre */
+  .splash-subtitle {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    font-weight: 400;
+    color: rgba(194,59,59,0.7);
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    margin-top: 8px;
+    opacity: 0;
+    animation: splashItemIn 0.7s ease 0.55s forwards;
+  }
+
+  /* Citation */
+  .splash-quote {
+    margin-top: 36px;
+    text-align: center;
+    max-width: 300px;
+    opacity: 0;
+    animation: splashItemIn 0.8s ease 0.85s forwards;
+  }
+  .splash-quote-text {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: clamp(16px, 4.5vw, 19px);
+    color: rgba(221,221,224,0.85);
+    line-height: 1.55;
+    letter-spacing: 0.01em;
+  }
+  .splash-quote-author {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    font-weight: 400;
+    color: rgba(194,59,59,0.6);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-top: 14px;
+  }
+
+  /* Invite à toucher */
+  .splash-tap {
+    position: absolute;
+    bottom: calc(44px + env(safe-area-inset-bottom));
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: rgba(221,221,224,0.25);
+    text-transform: uppercase;
+    opacity: 0;
+    animation: splashItemIn 0.6s ease 1.5s forwards, splashBlink 2.5s ease-in-out 2s infinite;
+  }
+
+  @keyframes splashItemIn {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes splashBlink {
+    0%,100% { opacity: 0.25; }
+    50%      { opacity: 0.55; }
+  }
+
+  /* Grains (bruit de fond) */
+  .splash-grain {
+    position: absolute;
+    inset: 0;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+    pointer-events: none;
+  }
+</style>
 
 <style>
   /* ── Safe Area iOS — Dynamic Island / Notch ── */
@@ -49,6 +279,162 @@
 <body>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<!-- SPLASH SCREEN -->
+<div id="splash-screen" onclick="dismissSplash()">
+  <div class="splash-bg"></div>
+  <div class="splash-grain"></div>
+  <div class="splash-lines"></div>
+  <div class="splash-diamond"></div>
+  <div class="splash-diamond-inner"></div>
+
+  <div class="splash-content">
+    <!-- Bouclier spartiate SVG -->
+    <div class="splash-emblem">
+      <svg class="splash-shield" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Forme du bouclier -->
+        <path d="M40 4 L72 16 L72 44 Q72 64 40 76 Q8 64 8 44 L8 16 Z"
+              fill="none" stroke="#C23B3B" stroke-width="1.5" opacity="0.8"/>
+        <!-- Bouclier intérieur -->
+        <path d="M40 10 L66 20 L66 43 Q66 60 40 71 Q14 60 14 43 L14 20 Z"
+              fill="rgba(194,59,59,0.06)" stroke="rgba(194,59,59,0.3)" stroke-width="0.8"/>
+        <!-- Lettre grecque Λ (Lambda — Sparte) -->
+        <path d="M28 57 L40 28 L52 57" stroke="#C23B3B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <line x1="32" y1="50" x2="48" y2="50" stroke="#C23B3B" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+        <!-- Rivets décoratifs -->
+        <circle cx="40" cy="15" r="1.5" fill="rgba(194,59,59,0.5)"/>
+        <circle cx="20" cy="26" r="1" fill="rgba(194,59,59,0.3)"/>
+        <circle cx="60" cy="26" r="1" fill="rgba(194,59,59,0.3)"/>
+      </svg>
+    </div>
+
+    <div class="splash-title">TraX<span>.</span></div>
+    <div class="splash-subtitle">Forged in iron</div>
+
+    <div class="splash-ornament">
+      <div class="splash-ornament-line"></div>
+      <div class="splash-ornament-dot"></div>
+      <div class="splash-ornament-line"></div>
+    </div>
+
+    <div class="splash-quote">
+      <div class="splash-quote-text" id="splash-quote-text"></div>
+      <div class="splash-quote-author" id="splash-quote-author"></div>
+    </div>
+  </div>
+
+  <div class="splash-tap">Toucher pour commencer</div>
+</div>
+
+<script>
+  const SPLASH_QUOTES = [
+    // ── Sparte & Grèce antique ──
+    { text: "L'homme qui transpire en paix saigne moins en guerre.", author: "Léonidas I, Roi de Sparte" },
+    { text: "Revenez avec votre bouclier, ou sur votre bouclier.", author: "Mère spartiate à son fils" },
+    { text: "Un Spartiate ne demande pas combien ils sont, mais où ils sont.", author: "Agésilas II de Sparte" },
+    { text: "La douleur est temporaire. La gloire est éternelle.", author: "Proverbe spartiate" },
+    { text: "Viens les prendre.", author: "Léonidas I aux Perses, aux Thermopyles" },
+    { text: "La sueur épargne le sang.", author: "Dicton spartiate" },
+    { text: "Celui qui résiste quand tout cède est le véritable vainqueur.", author: "Thucydide" },
+    { text: "Ne pas subir la douleur, c'est ne jamais avoir vécu.", author: "Pindare" },
+    { text: "La victoire appartient à celui qui persévère le plus longtemps.", author: "Épictète" },
+    { text: "Le corps endure ce que l'esprit refuse de céder.", author: "Xénophon" },
+    { text: "Ce n'est pas la taille du chien dans le combat, c'est la taille du combat dans le chien.", author: "Proverbe grec" },
+    { text: "La force ne vient pas du corps. Elle vient de la volonté indomptable de l'âme.", author: "Plutarque" },
+    { text: "L'excellence n'est pas un acte, c'est une habitude.", author: "Aristote" },
+
+    // ── Rome antique ──
+    { text: "Fortes fortuna adiuvat — La chance sourit aux audacieux.", author: "Térence" },
+    { text: "Per aspera ad astra — Par l'effort vers les étoiles.", author: "Sénèque" },
+    { text: "Dum spiro, spero — Tant que je respire, j'espère.", author: "Cicéron" },
+    { text: "Ce qui ne me détruit pas me rend plus fort.", author: "Marc Aurèle, Méditations" },
+    { text: "Tu as du pouvoir sur ton esprit, pas sur les événements extérieurs. Réalise-le et tu trouveras la force.", author: "Marc Aurèle" },
+    { text: "Les obstacles à l'action font avancer l'action. Ce qui se dresse sur le chemin devient le chemin.", author: "Marc Aurèle" },
+    { text: "Supporte et abstiens-toi.", author: "Épictète, stoïcien" },
+    { text: "Si tu veux quelque chose que tu n'as jamais eu, fais quelque chose que tu n'as jamais fait.", author: "Sénèque" },
+    { text: "Bene vixit qui bene latuit — On vit bien qui se cache bien dans l'effort quotidien.", author: "Ovide" },
+    { text: "Gutta cavat lapidem — La goutte creuse la pierre, non par la force, mais par la constance.", author: "Ovide" },
+    { text: "La gloire n'est pas de ne jamais tomber, mais de se relever à chaque chute.", author: "Sénèque" },
+
+    // ── Philosophie & sagesse universelle ──
+    { text: "Le seul mauvais entraînement est celui qu'on n'a pas fait.", author: "Proverbe de salle" },
+    { text: "Sois plus dur que la douleur que tu ressens.", author: "Proverbe de culturiste" },
+    { text: "Le champion n'est pas fait dans la salle. Il est fait de ce qu'il a à l'intérieur.", author: "Muhammad Ali" },
+    { text: "Je ne compte mes abdominaux qu'à partir du moment où ça fait mal.", author: "Muhammad Ali" },
+    { text: "La souffrance est l'agent du changement.", author: "Proverbe de force athlétique" },
+    { text: "Chaque répétition que tu fais quand tu veux t'arrêter est celle qui te construit.", author: "Arnold Schwarzenegger" },
+    { text: "La douleur que tu ressens aujourd'hui est la force que tu ressentiras demain.", author: "Arnold Schwarzenegger" },
+    { text: "Les poids ne mentent jamais.", author: "Mark Bell, powerlifter" },
+    { text: "Ta seule limite, c'est toi-même.", author: "Proverbe athlétique" },
+    { text: "La douleur est faiblesse qui quitte le corps.", author: "Marines américains" },
+    { text: "Soulève lourd. Mange bien. Dors profondément. Répète.", author: "Code du guerrier moderne" },
+    { text: "Le succès, c'est tomber sept fois et se relever huit.", author: "Proverbe japonais" },
+    { text: "La discipline est le pont entre les objectifs et l'accomplissement.", author: "Jim Rohn" },
+    { text: "On devient ce qu'on répète.", author: "Will Durant, sur Aristote" },
+
+    // ── Stoïcisme & philosophie du dépassement ──
+    { text: "Comporte-toi comme un athlète de la vertu : entraîne-toi chaque jour.", author: "Épictète" },
+    { text: "Fais bien ce que tu fais maintenant.", author: "Marc Aurèle" },
+    { text: "La résistance révèle le caractère.", author: "Épictète" },
+    { text: "Ce n'est pas parce que les choses sont difficiles que nous n'osons pas, c'est parce que nous n'osons pas qu'elles sont difficiles.", author: "Sénèque" },
+    { text: "Concentre-toi sur ce qui dépend de toi.", author: "Épictète, Manuel" },
+    { text: "Aime la difficulté.", author: "Marc Aurèle" },
+    { text: "La vertu s'acquiert par l'effort quotidien, non par les discours.", author: "Sénèque" },
+
+    // ── Bushido & guerriers orientaux ──
+    { text: "Nul ne connaît vraiment sa propre force jusqu'à ce qu'elle ait été mise à l'épreuve.", author: "Miyamoto Musashi" },
+    { text: "Aujourd'hui est la victoire sur toi-même d'hier ; demain est ta victoire sur les hommes moins habiles.", author: "Miyamoto Musashi" },
+    { text: "Le Bushido, c'est réaliser que tu es déjà mort.", author: "Code Bushido samouraï" },
+    { text: "Un samouraï sans épée est comme un samouraï avec une épée, mais sans bras.", author: "Proverbe japonais" },
+    { text: "La montagne ne bouge pas. Sois la montagne.", author: "Zen japonais" },
+
+    // ── Modernes & culturistes ──
+    { text: "Les muscles ne se construisent pas dans la salle. Ils se construisent dans le lit, quand tu dors.", author: "Ronnie Coleman" },
+    { text: "Everybody wants to be a bodybuilder, but nobody wants to lift no heavy-ass weights.", author: "Ronnie Coleman" },
+    { text: "Blood, sweat and respect. Le premier deux, tu les donnes. Le dernier, tu le mérites.", author: "Dwayne Johnson" },
+    { text: "Le seul endroit où le succès vient avant le travail, c'est dans le dictionnaire.", author: "Vince Lombardi" },
+    { text: "Je rate 100% des tirs que je ne tente pas — et 100% des séances que je ne fais pas.", author: "Proverbe de salle, d'après Wayne Gretzky" },
+    { text: "Le but n'est pas de se surpasser une seule fois. C'est de se surpasser chaque jour.", author: "Proverbe athlétique" },
+    { text: "Chaque fois que tu soulèves, tu votes pour la personne que tu veux devenir.", author: "James Clear, Atomic Habits" },
+    { text: "Tu n'as pas à être extrême, juste constant.", author: "Proverbe de progression" },
+  ];
+
+  // Sélection d'une citation différente à chaque ouverture (jamais deux fois de suite)
+  (function() {
+    const SPLASH_KEY = 'trax-splash-shown';
+    const QUOTE_KEY  = 'trax-last-quote';
+    const lastShown  = parseInt(localStorage.getItem(SPLASH_KEY) || '0', 10);
+    const lastIdx    = parseInt(localStorage.getItem(QUOTE_KEY)  || '-1', 10);
+    const now        = Date.now();
+    const EIGHT_HOURS = 8 * 60 * 60 * 1000;
+
+    // Cache immédiatement si vu récemment
+    if (now - lastShown < EIGHT_HOURS) {
+      document.getElementById('splash-screen').style.display = 'none';
+      return;
+    }
+
+    // Choisir une citation au hasard, jamais la même que la dernière
+    let idx;
+    do { idx = Math.floor(Math.random() * SPLASH_QUOTES.length); } while (idx === lastIdx && SPLASH_QUOTES.length > 1);
+    localStorage.setItem(QUOTE_KEY, idx.toString());
+
+    const q = SPLASH_QUOTES[idx];
+    document.getElementById('splash-quote-text').textContent   = '\u00AB\u00A0' + q.text + '\u00A0\u00BB';
+    document.getElementById('splash-quote-author').textContent = '\u2014 ' + q.author;
+  })();
+
+  function dismissSplash() {
+    const el = document.getElementById('splash-screen');
+    if (!el || el.style.display === 'none') return;
+    el.classList.add('fade-out');
+    localStorage.setItem('trax-splash-shown', Date.now().toString());
+    setTimeout(() => { el.style.display = 'none'; }, 700);
+  }
+
+  // Disparaît automatiquement après 5s
+  setTimeout(() => { dismissSplash(); }, 5000);
+</script>
 
 <div id="toast" class="toast"></div>
 
