@@ -428,7 +428,7 @@
     const AND_STORE = 'https://play.google.com/store/apps/details?id=com.basicfit.trainingApp';
 
     if (isAndroid) {
-      window.location.href = 'intent://#Intent;package=com.basicfit.trainingApp;end';
+      window.location.href = 'intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=com.basicfit.trainingApp;end';
       setTimeout(() => { if (!document.hidden) window.location.href = AND_STORE; }, 2000);
     } else if (isIOS) {
       window.location.href = 'basicfit://';

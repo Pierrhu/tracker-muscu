@@ -2055,7 +2055,7 @@ function openBasicFit() {
 
   if (isAndroid) {
     // Intent URI avec le bon package → ouvre l'app directement
-    window.location.href = 'intent://#Intent;package=com.basicfit.trainingApp;end';
+    window.location.href = 'intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=com.basicfit.trainingApp;end';
     // Fallback : si l'app n'est pas installée, Play Store au bout de 2s
     setTimeout(() => {
       if (!document.hidden) window.location.href = AND_STORE;
