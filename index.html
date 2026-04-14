@@ -420,14 +420,23 @@
   })();
 
   function goToBattlefield() {
-    // Tente d'ouvrir l'app Basic Fit via deep link
-    const deepLink = 'basicfit://';
-    const fallbackUrl = 'https://www.basic-fit.com/fr-fr/app';
-    const fallback = setTimeout(() => {
-      window.open(fallbackUrl, '_blank');
-    }, 1500);
-    window.addEventListener('blur', () => clearTimeout(fallback), { once: true });
-    window.location.href = deepLink;
+    const ua = navigator.userAgent;
+    const isAndroid = /Android/i.test(ua);
+    const isIOS     = /iPhone|iPad|iPod/i.test(ua);
+
+    const IOS_STORE  = 'https://apps.apple.com/fr/app/basic-fit/id1048254718';
+    const AND_STORE  = 'https://play.google.com/store/apps/details?id=com.basicfit.fr';
+    const AND_INTENT = 'intent://home#Intent;scheme=basicfit;package=com.basicfit.fr;end';
+
+    if (isAndroid) {
+      window.location.href = AND_INTENT;
+      setTimeout(() => { if (!document.hidden) window.location.href = AND_STORE; }, 2000);
+    } else if (isIOS) {
+      window.location.href = 'basicfit://';
+      setTimeout(() => { if (!document.hidden) window.location.href = IOS_STORE; }, 1500);
+    } else {
+      window.open(IOS_STORE, '_blank');
+    }
   }
 
   function dismissSplash() {

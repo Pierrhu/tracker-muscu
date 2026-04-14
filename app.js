@@ -2043,31 +2043,35 @@ function confirmImport() {
 }
 
 function openBasicFit() {
-  const isAndroid = /Android/i.test(navigator.userAgent);
-  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const ua = navigator.userAgent;
+  const isAndroid = /Android/i.test(ua);
+  const isIOS = /iPhone|iPad|iPod/i.test(ua);
 
-  // 1. Masquer le splash screen immédiatement pour que ton tracker soit prêt
-  const splash = document.getElementById('splash-screen');
-  if (splash) splash.style.display = 'none';
+  const IOS_STORE   = 'https://apps.apple.com/fr/app/basic-fit/id1048254718';
+  const AND_STORE   = 'https://play.google.com/store/apps/details?id=com.basicfit.fr';
+  // Android intent — pas de point-virgule après "end"
+  const AND_INTENT  = 'intent://home#Intent;scheme=basicfit;package=com.basicfit.fr;end';
 
   if (isAndroid) {
-    // Sur Android, on utilise le format "Intent" qui est le seul à forcer l'app
-    window.location.href = "intent://#Intent;package=com.basicfit.fr;scheme=basicfit;end;";
-  } 
-  else if (isIOS) {
-    // Sur iOS, on tente le schéma direct
-    window.location.href = "basicfit://";
-    
-    // Fallback pour iOS si l'app n'est pas là (on évite le 404 en allant sur le store)
+    // Intent URI : ouvre l'app directement si installée,
+    // sinon Android propose d'aller sur le Play Store automatiquement
+    window.location.href = AND_INTENT;
+    // Filet de sécurité : si toujours visible après 2s → Play Store
     setTimeout(() => {
-      if (!document.hidden) {
-        window.location.href = "https://apps.apple.com/fr/app/basic-fit/id1048254718";
-      }
+      if (!document.hidden) window.location.href = AND_STORE;
     }, 2000);
-  } 
+  }
+  else if (isIOS) {
+    // Tenter le schéma universel Basic Fit
+    window.location.href = 'basicfit://';
+    // Si l'app n'est pas installée, document reste visible → App Store
+    setTimeout(() => {
+      if (!document.hidden) window.location.href = IOS_STORE;
+    }, 1500);
+  }
   else {
-    // Si tu es sur PC ou autre
-    window.open("https://www.basic-fit.com/fr-fr/app", "_blank");
+    // Desktop → App Store iOS (ou Play Store selon préférence)
+    window.open(IOS_STORE, '_blank');
   }
 }
 
