@@ -3,7 +3,7 @@ const PROGRAM = [
   {
     id:'A', name:'Jour A', subtitle:'Force Horizontale', accent:'#C23B3B', when:'Lundi',
     exercises: [
-      {id:'a1',name:'Développé couché barre',format:'3 chauffe + Top set 3-5 + 2×6-8',sets:3,topSet:true,rankKey:'bench',
+      {id:'a1',restTime:180,name:'Développé couché barre',format:'3 chauffe + Top set 3-5 + 2×6-8',sets:3,topSet:true,rankKey:'bench',
         info:{
           gif:'gifs/developpe-couche-barre.gif',
           execution:[
@@ -15,7 +15,7 @@ const PROGRAM = [
           ],
           interet:'Mouvement roi du développement des pectoraux. 3 séries de chauffe progressive puis 1 top set lourd + 2 back-off. Format réduit à 3 séries de travail pour tenir dans l\'heure avec l\'échauffement. C\'est ton marqueur de force principal.'
         }},
-      {id:'a2',name:'Rowing barre pronation',format:'1-2 chauffe + Top set 3-5 + 2×6-8',sets:3,topSet:true,rankKey:'row',
+      {id:'a2',restTime:180,name:'Rowing barre pronation',format:'1-2 chauffe + Top set 3-5 + 2×6-8',sets:3,topSet:true,rankKey:'row',
         info:{
           gif:'gifs/rowing-barre-pronation.gif',
           execution:[
@@ -27,7 +27,7 @@ const PROGRAM = [
           ],
           interet:'Mouvement composé lourd pour le dos en épaisseur. Moins de chauffe nécessaire car le corps est déjà préparé par le bench. 1 top set + 2 back-off pour équilibrer le volume push/pull sans dépasser l\'heure.'
         }},
-      {id:'a3',name:'Développé incliné DB 30°',format:'3×8-10',sets:3,
+      {id:'a3',restTime:120,name:'Développé incliné DB 30°',format:'3×8-10',sets:3,
         info:{
           gif:'gifs/developpe-incline-db.gif',
           execution:[
@@ -39,7 +39,7 @@ const PROGRAM = [
           ],
           interet:'Cible la portion claviculaire (haut des pecs) qui est souvent en retard. Placé après le couché pour profiter de la pré-fatigue de la portion sternale — l\'incliné n\'a pas besoin d\'être lourd pour être efficace ici.'
         }},
-      {id:'a4',name:'Tirage vertical large',format:'3×10-12',sets:3,
+      {id:'a4',restTime:120,name:'Tirage vertical large',format:'3×10-12',sets:3,
         info:{
           gif:'gifs/tirage-vertical-large.gif',
           execution:[
@@ -51,7 +51,7 @@ const PROGRAM = [
           ],
           interet:'Complète le rowing barre avec un tirage vertical pour varier le plan de mouvement. La prise large cible la largeur du dos (grand dorsal). En volume modéré ici pour accumuler du travail sans fatiguer le bas du dos déjà sollicité par le rowing.'
         }},
-      {id:'a5',name:'Élévations latérales',format:'3×12-15',sets:3,
+      {id:'a5',restTime:90,name:'Élévations latérales',format:'3×12-15',sets:3,
         info:{
           gif:'gifs/elevations-laterales-halteres.gif',
           execution:[
@@ -63,7 +63,7 @@ const PROGRAM = [
           ],
           interet:'Isolation pure du deltoïde latéral (médial), qui ne reçoit quasiment aucun travail indirect des composés. C\'est l\'exercice qui donne la largeur d\'épaules. En 12-15 reps car ce muscle répond mieux au volume.'
         }},
-      {id:'a6',name:'SS: Curl EZ / Ext. corde',format:'2×8-10 / 10-12',sets:2,superset:true,
+      {id:'a6',restTime:60,name:'SS: Curl EZ / Ext. corde',format:'2×8-10 / 10-12',sets:2,superset:true,
         info:{
           gif:'gifs/curl-ez.gif',
           execution:[
@@ -79,7 +79,7 @@ const PROGRAM = [
   {
     id:'B', name:'Jour B', subtitle:'Force Verticale', accent:'#2D7DD2', when:'Mercredi',
     exercises: [
-      {id:'b1',name:'Développé militaire',format:'Top set 3-5 + 3×6-8',sets:4,topSet:true,rankKey:'ohp',
+      {id:'b1',restTime:180,name:'Développé militaire',format:'Top set 3-5 + 3×6-8',sets:4,topSet:true,rankKey:'ohp',
         info:{
           gif:'gifs/developpe-militaire-halteres.gif',
           execution:[
@@ -91,7 +91,7 @@ const PROGRAM = [
           ],
           interet:'Mouvement de force principal pour les épaules. La barre permet de charger plus lourd que les haltères. Debout, il recrute davantage le gainage et les stabilisateurs. En top set pour construire la force du deltoïde antérieur.'
         }},
-      {id:'b2',name:'Tirage vertical neutre',format:'4×6-8 lourd',sets:4,
+      {id:'b2',restTime:150,name:'Tirage vertical neutre',format:'4×6-8 lourd',sets:4,
         info:{
           gif:'gifs/tirage-vertical-neutre.gif',
           execution:[
@@ -103,7 +103,7 @@ const PROGRAM = [
           ],
           interet:'Travaillé en lourd (6-8 reps) — c\'est ton chemin vers les tractions. La prise neutre sollicite davantage le grand dorsal et réduit le stress sur les épaules. Le jour où tu tireras ton poids de corps ici pour 6+ reps, tu feras ta première traction.'
         }},
-      {id:'b3',name:'Rowing DB unilatéral',format:'3×10-12/bras',sets:3,
+      {id:'b3',restTime:120,name:'Rowing DB unilatéral',format:'3×10-12/bras',sets:3,
         info:{
           gif:'gifs/rowing-db-unilateral.gif',
           execution:[
@@ -115,7 +115,7 @@ const PROGRAM = [
           ],
           interet:'Corrige les asymétries gauche/droite du dos que les mouvements bilatéraux peuvent masquer. L\'unilatéralité permet aussi une ROM plus grande et un meilleur étirement du grand dorsal. Complémentaire du tirage vertical en variant le plan.'
         }},
-      {id:'b4',name:'Latérales poulie basse',format:'4×12-15',sets:4,
+      {id:'b4',restTime:90,name:'Latérales poulie basse',format:'4×12-15',sets:4,
         info:{
           gif:'gifs/elevations-laterales-poulie.gif',
           execution:[
@@ -127,7 +127,7 @@ const PROGRAM = [
           ],
           interet:'Angle différent des latérales haltères du Jour A — la poulie basse maintient une tension constante et maximise le stimulus en position d\'étirement, ce que les haltères ne font pas. 4 séries car les deltoïdes sont un point faible identifié.'
         }},
-      {id:'b5',name:'Face pull corde',format:'3×15-20',sets:3,
+      {id:'b5',restTime:60,name:'Face pull corde',format:'3×15-20',sets:3,
         info:{
           gif:'gifs/face-pull.gif',
           execution:[
@@ -144,7 +144,7 @@ const PROGRAM = [
   {
     id:'C', name:'Jour C', subtitle:'Volume & Rattrapage', accent:'#1A9E8F', when:'Vendredi',
     exercises: [
-      {id:'c1',name:'Développé couché DB',format:'4×10-12',sets:4,
+      {id:'c1',restTime:120,name:'Développé couché DB',format:'4×10-12',sets:4,
         info:{
           gif:'gifs/developpe-couche-db.gif',
           execution:[
@@ -156,7 +156,7 @@ const PROGRAM = [
           ],
           interet:'Stimulus différent de la barre du Jour A — la ROM plus grande et la stabilisation requise recrutent plus de fibres. En 10-12 reps jour de volume, charges modérées. Pas de top set car c\'est la veille de la sortie longue vélo.'
         }},
-      {id:'c2',name:'Tirage horizontal serré',format:'4×10-12',sets:4,
+      {id:'c2',restTime:120,name:'Tirage horizontal serré',format:'4×10-12',sets:4,
         info:{
           gif:'gifs/tirage-horizontal-serre.gif',
           execution:[
@@ -168,7 +168,7 @@ const PROGRAM = [
           ],
           interet:'Complète les tirages verticaux des Jours A et B avec un tirage horizontal. La prise serrée cible davantage le milieu du dos (rhomboïdes, trapèzes moyens) et l\'épaisseur du dos. En volume (10-12 reps) pour accumuler du travail sans fatiguer le SNC.'
         }},
-      {id:'c3',name:'Écarté poulie vis-à-vis',format:'3×12-15',sets:3,
+      {id:'c3',restTime:90,name:'Écarté poulie vis-à-vis',format:'3×12-15',sets:3,
         info:{
           gif:'gifs/ecarte-poulie.gif',
           execution:[
@@ -180,7 +180,7 @@ const PROGRAM = [
           ],
           interet:'Isolation pure des pectoraux avec tension constante (avantage de la poulie vs haltères). En fin de séance pecs pour finir le muscle avec du volume métabolique. Complète les développés qui sont des composés multi-articulaires.'
         }},
-      {id:'c4',name:'Latérales drop set méca.',format:'3×(8+8)',sets:3,dropSet:true,
+      {id:'c4',restTime:90,name:'Latérales drop set méca.',format:'3×(8+8)',sets:3,dropSet:true,
         info:{
           gif:'gifs/elevations-laterales-halteres.gif',
           execution:[
@@ -191,7 +191,7 @@ const PROGRAM = [
           ],
           interet:'Technique efficace pour maximiser le volume du deltoïde latéral en peu de temps. Les 2 angles exploitent la courbe de force : quand tu es épuisé en position penchée, tu passes debout. 16 reps effectives par série avec le même poids.'
         }},
-      {id:'c5',name:'Face pull corde',format:'2×15-20',sets:2,
+      {id:'c5',restTime:60,name:'Face pull corde',format:'2×15-20',sets:2,
         info:{
           gif:'gifs/face-pull.gif',
           execution:[
@@ -201,7 +201,7 @@ const PROGRAM = [
           ],
           interet:'Maintien de la santé articulaire des épaules. Présent 2 fois dans la semaine (Jours B et C) pour un total de 5 séries hebdomadaires — suffisant pour la prévention sans gaspiller du temps.'
         }},
-      {id:'c6',name:'SS: Curl marteau / Ext.',format:'2×10-12 / 10-12',sets:2,superset:true,
+      {id:'c6',restTime:60,name:'SS: Curl marteau / Ext.',format:'2×10-12 / 10-12',sets:2,superset:true,
         info:{
           gif:'gifs/curl-marteau.gif',
           execution:[
