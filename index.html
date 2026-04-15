@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0C0C10">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="application-name" content="Tracker Muscu">
+<meta name="application-name" content="PONOS">
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="styles.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -419,7 +419,7 @@
   }
 </style>
 
-<title>Tracker Muscu</title>
+<title>PONOS</title>
 </head>
 <body>
 
@@ -460,8 +460,8 @@
       </svg>
     </div>
 
-    <div class="splash-title">TraX<span>.</span></div>
-    <div class="splash-subtitle">Forged in iron</div>
+    <div class="splash-title">PONOS<span>.</span></div>
+    <div class="splash-subtitle">Forged, not born</div>
 
     <div class="splash-ornament">
       <div class="splash-ornament-line"></div>
@@ -481,7 +481,7 @@
 <script>
   // Gestion du splash screen
   (function() {
-    const SESSION_KEY = 'trax-splash-session-seen';
+    const SESSION_KEY = 'ponos-splash-session-seen';
     if (sessionStorage.getItem(SESSION_KEY)) {
       document.getElementById('splash-screen').style.display = 'none';
     }
@@ -526,7 +526,7 @@
     setTimeout(() => {
       splash.style.display = 'none';
       tr.style.display     = 'none';
-      sessionStorage.setItem('trax-splash-session-seen', 'true');
+      sessionStorage.setItem('ponos-splash-session-seen', 'true');
     }, 1600);
   }
 
@@ -534,7 +534,7 @@
     const el = document.getElementById('splash-screen');
     if (!el || el.style.display === 'none') return;
     el.classList.add('fade-out');
-    sessionStorage.setItem('trax-splash-session-seen', 'true');
+    sessionStorage.setItem('ponos-splash-session-seen', 'true');
     setTimeout(() => { el.style.display = 'none'; }, 700);
   }
 

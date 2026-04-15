@@ -1,6 +1,6 @@
 {
-  "name": "Tracker Muscu",
-  "short_name": "TraX",
+  "name": "PONOS",
+  "short_name": "PONOS",
   "description": "Suivi d'entraînement musculation",
   "start_url": "./index.html",
   "display": "standalone",

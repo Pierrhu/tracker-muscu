@@ -11,7 +11,7 @@ let state = {
 };
 
 // ============ INDEXEDDB STORAGE ============
-const DB_NAME = 'tracker-muscu-db';
+const DB_NAME = 'ponos-db';
 const DB_VERSION = 1;
 const STORE_NAME = 'state';
 let db = null;
@@ -1697,7 +1697,7 @@ function exportToExcel() {
   ws3['!cols'] = [14,12,12,14,12].map(w => ({wch:w}));
   XLSX.utils.book_append_sheet(wb, ws3, 'Mesures corporelles');
 
-  const filename = `tracker-muscu-${new Date().toISOString().slice(0,10)}.xlsx`;
+  const filename = `ponos-${new Date().toISOString().slice(0,10)}.xlsx`;
   XLSX.writeFile(wb, filename);
   showToast('Export Excel téléchargé');
 }

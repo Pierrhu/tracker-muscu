@@ -1,4 +1,4 @@
-const CACHE = 'tracker-muscu-v1';
+const CACHE = 'ponos-v1';
 
 const PRECACHE = [
   './',
