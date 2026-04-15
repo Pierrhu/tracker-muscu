@@ -551,7 +551,7 @@
     <div id="edit-modal-body"></div>
     <button class="btn-primary" id="edit-modal-save" style="background:var(--blue)" onclick="saveEditSession()">Enregistrer les modifications ✓</button>
     <button class="modal-cancel" onclick="closeEditModal()">Annuler</button>
-    <button class="btn-outline" id="edit-modal-delete" style="margin-top:16px;display:none" onclick="">Supprimer</button>
+    <button class="btn-danger" id="edit-modal-delete" style="display:none" onclick="">Supprimer cette entrée</button>
   </div>
 </div>
 
@@ -713,6 +713,7 @@
 <div class="page" id="page-progress"></div>
 <div class="page" id="page-body"></div>
 <div class="page" id="page-history"></div>
+<div class="page" id="page-programs"></div>
 
 <!-- APP -->
 <!-- Data -->
@@ -732,6 +733,8 @@
 <script src="js/export.js"></script>
 <!-- UI -->
 <script src="js/modals.js"></script>
+<script src="data/programs.js"></script>
+<script src="js/programEditor.js"></script>
 <script src="js/nav.js"></script>
 <script src="js/main.js"></script>
 

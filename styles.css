@@ -34,12 +34,56 @@
 
   /* TOAST */
   .toast {
-    position: fixed; top: 16px; left: 50%; transform: translateX(-50%) translateY(-100px);
-    background: var(--green); color: #000; padding: 10px 28px; border-radius: 12px;
-    font-size: 13px; font-weight: 700; z-index: 999; transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+    position: fixed;
+    top: max(14px, env(safe-area-inset-top));
+    left: 50%;
+    transform: translateX(-50%) translateY(calc(-100% - 20px));
+    min-width: 200px; max-width: calc(100vw - 32px);
+    background: #101014;
+    border: 1px solid rgba(194,59,59,0.25);
+    border-left: 3px solid #C23B3B;
+    border-radius: 4px;
+    padding: 10px 16px;
+    display: flex; align-items: center; gap: 8px;
+    z-index: 999;
+    opacity: 0;
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), opacity 0.3s ease;
+    pointer-events: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
   }
-  .toast.show { transform: translateX(-50%) translateY(0); }
-  .toast.pr { background: var(--yellow); }
+  .toast-icon {
+    font-family: 'Cinzel', serif;
+    font-size: 9px; font-weight: 700;
+    color: #C23B3B;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .toast-sep {
+    width: 1px; height: 16px;
+    background: rgba(194,59,59,0.3);
+    flex-shrink: 0;
+  }
+  .toast-msg {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-size: 12px; font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+  .toast.pr {
+    border-left-color: var(--yellow);
+    border-color: rgba(228,162,41,0.25);
+  }
+  .toast.pr .toast-icon { color: var(--yellow); }
+  .toast.pr .toast-sep  { background: rgba(228,162,41,0.3); }
+  .toast.err {
+    border-left-color: #C23B3B;
+  }
 
   /* PR BANNER */
   .pr-banner {
@@ -591,8 +635,6 @@
     background: rgba(26,158,143,0.15); color: var(--green);
   }
 
-  /* TOAST PR variant */
-  .toast.pr { background: #FFD700; color: #000; }
 
   /* REST TIMER */
   .rest-timer {
@@ -935,3 +977,664 @@
   }
   @keyframes victoryTap   { from { opacity: 0; } to { opacity: 1; } }
   @keyframes victoryBlink { 0%,100% { opacity: 0.2; } 50% { opacity: 0.5; } }
+
+  /* ════════════════════════════════════════════════════
+     PAGE PROGRAMMES
+  ════════════════════════════════════════════════════ */
+
+  /* ── Cartes de programme ── */
+  .prog-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    user-select: none; -webkit-user-select: none;
+  }
+  .prog-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2px;
+    background: transparent;
+    transition: background 0.3s;
+  }
+  .prog-card--active {
+    border-color: rgba(194,59,59,0.4);
+    box-shadow: 0 0 20px rgba(194,59,59,0.08), inset 0 0 30px rgba(194,59,59,0.03);
+  }
+  .prog-card--active::before {
+    background: linear-gradient(90deg, transparent, #C23B3B, transparent);
+  }
+
+  .prog-active-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: 'Cinzel', serif;
+    font-size: 8px; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: #C23B3B;
+    margin-bottom: 8px;
+  }
+  .prog-active-badge svg { opacity: 0.8; }
+
+  .prog-card-header { margin-bottom: 10px; }
+  .prog-card-name {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(14px, 4vw, 17px);
+    font-weight: 700;
+    color: #EDEDF0;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+    margin-bottom: 3px;
+  }
+  .prog-card--active .prog-card-name { color: #fff; }
+  .prog-card-meta {
+    font-family: 'Cinzel', serif;
+    font-size: 9px; font-weight: 400;
+    color: var(--text3);
+    letter-spacing: 0.15em; text-transform: uppercase;
+  }
+
+  /* Pastilles jours */
+  .prog-day-dots {
+    display: flex; gap: 6px; margin-bottom: 8px;
+  }
+  .prog-day-dot {
+    width: 28px; height: 28px; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0.85;
+  }
+  .prog-day-dot-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px; font-weight: 700;
+    color: #fff; letter-spacing: 0;
+  }
+  .prog-day-names {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .prog-day-name {
+    font-family: 'Cinzel', serif;
+    font-size: 8px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+  }
+
+  /* Bouton créer */
+  .prog-create-btn {
+    border: 1px dashed rgba(194,59,59,0.3);
+    border-radius: 8px;
+    padding: 18px;
+    text-align: center;
+    cursor: pointer;
+    margin-top: 4px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .prog-create-btn:active { background: rgba(194,59,59,0.05); border-color: rgba(194,59,59,0.6); }
+  .prog-create-icon {
+    font-size: 22px; color: rgba(194,59,59,0.5);
+    line-height: 1; margin-bottom: 5px;
+  }
+  .prog-create-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px; font-weight: 700;
+    color: rgba(194,59,59,0.5);
+    letter-spacing: 0.2em; text-transform: uppercase;
+  }
+
+  /* ════════════════════════════════════════════════════
+     ÉDITEUR DE PROGRAMME
+  ════════════════════════════════════════════════════ */
+
+  .editor-overlay {
+    position: fixed; inset: 0; z-index: 400;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.34,1.2,0.64,1);
+  }
+  .editor-overlay.open    { transform: translateY(0); }
+  .editor-overlay.closing { transform: translateY(100%); transition: transform 0.3s ease-in; }
+
+  /* Header éditeur */
+  .editor-header {
+    flex-shrink: 0;
+    padding: max(16px, env(safe-area-inset-top)) 16px 0;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .editor-close {
+    position: absolute; top: max(14px, env(safe-area-inset-top)); right: 14px;
+    background: none; border: none; color: var(--text3);
+    font-size: 18px; cursor: pointer; padding: 4px;
+    font-family: inherit;
+  }
+  .editor-phase {
+    text-align: center; padding-bottom: 14px;
+  }
+  .editor-phase-label {
+    font-family: 'Cinzel', serif;
+    font-size: 8px; font-weight: 700;
+    color: var(--red); letter-spacing: 0.25em; text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+  .editor-phase-name {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 18px; font-weight: 700;
+    color: #EDEDF0; letter-spacing: 0.08em;
+  }
+  .editor-step-dots {
+    display: flex; justify-content: center; gap: 8px;
+    padding: 10px 0;
+  }
+  .editor-step-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--border);
+    transition: background 0.2s, transform 0.2s;
+  }
+  .editor-step-dot.active { background: var(--red); transform: scale(1.3); }
+  .editor-step-dot.done   { background: rgba(194,59,59,0.4); }
+
+  /* Corps éditeur */
+  .editor-body {
+    flex: 1; overflow-y: auto;
+    padding: 20px 16px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Pied éditeur */
+  .editor-footer {
+    flex-shrink: 0;
+    padding: 12px 16px max(16px, env(safe-area-inset-bottom));
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    display: flex; gap: 10px;
+  }
+  .editor-btn {
+    flex: 1; padding: 14px;
+    border-radius: 4px; border: none;
+    font-family: 'Cinzel', serif;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    cursor: pointer; transition: opacity 0.15s;
+  }
+  .editor-btn:active { opacity: 0.75; }
+  .editor-btn-prev {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text3);
+  }
+  .editor-btn-next {
+    background: rgba(194,59,59,0.15);
+    border: 1px solid rgba(194,59,59,0.4);
+    color: var(--red);
+  }
+  .editor-btn-save {
+    background: var(--red);
+    border: 1px solid var(--red);
+    color: #fff;
+  }
+
+  /* ── Champs de l'éditeur ── */
+  .editor-field { margin-bottom: 18px; }
+  .editor-field-row { display: flex; gap: 10px; }
+  .editor-field--half { flex: 1; }
+  .editor-field-label {
+    font-family: 'Cinzel', serif;
+    font-size: 8px; font-weight: 700;
+    color: rgba(194,59,59,0.7);
+    letter-spacing: 0.2em; text-transform: uppercase;
+    margin-bottom: 6px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .editor-field-label::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(90deg, rgba(194,59,59,0.25), transparent);
+  }
+  .editor-input {
+    width: 100%; padding: 10px 12px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 4px; color: var(--text);
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-size: 14px; font-weight: 500;
+    outline: none; -webkit-appearance: none;
+    transition: border-color 0.15s;
+  }
+  .editor-input:focus { border-color: rgba(194,59,59,0.5); }
+
+  /* Radio objectif */
+  .editor-radio-row { display: flex; gap: 8px; }
+  .editor-radio {
+    flex: 1; padding: 10px 4px; text-align: center;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 4px; color: var(--text3);
+    font-family: 'Cinzel', serif; font-size: 10px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    cursor: pointer; transition: 0.15s;
+  }
+  .editor-radio.active {
+    background: rgba(194,59,59,0.12);
+    border-color: rgba(194,59,59,0.5);
+    color: var(--red);
+  }
+
+  /* Compteur de jours */
+  .editor-day-count-row { display: flex; gap: 8px; }
+  .editor-day-count-btn {
+    flex: 1; padding: 10px 4px; text-align: center;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 4px; color: var(--text3);
+    font-family: 'Cinzel', serif; font-size: 15px; font-weight: 700;
+    cursor: pointer; transition: 0.15s;
+  }
+  .editor-day-count-btn.active {
+    background: rgba(194,59,59,0.12);
+    border-color: rgba(194,59,59,0.5);
+    color: var(--red);
+  }
+
+  /* Config d'un jour (étape 2) */
+  .editor-day-config {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px;
+    margin-bottom: 14px;
+  }
+  .editor-day-config-header {
+    padding-left: 10px; margin-bottom: 14px;
+  }
+  .editor-day-config-num {
+    font-family: 'Cinzel', serif;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.15em; text-transform: uppercase;
+  }
+
+  /* Swatches couleur */
+  .editor-color-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .editor-color-swatch {
+    width: 28px; height: 28px; border-radius: 4px;
+    border: 2px solid transparent; cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s;
+  }
+  .editor-color-swatch.active {
+    border-color: #fff; transform: scale(1.15);
+  }
+
+  /* Onglets jours (étape 3) */
+  .editor-day-tabs {
+    display: flex; overflow-x: auto; gap: 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 14px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .editor-day-tabs::-webkit-scrollbar { display: none; }
+  .editor-day-tab {
+    flex-shrink: 0; padding: 8px 14px;
+    background: none; border: none; border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    font-family: 'Cinzel', serif;
+    font-size: 9px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text3); cursor: pointer; transition: 0.15s;
+  }
+  .editor-day-tab.active { color: var(--red); }
+
+  /* Liste d'exercices (étape 3) */
+  .editor-ex-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 6px; margin-bottom: 6px;
+  }
+  .editor-ex-info { flex: 1; }
+  .editor-ex-name {
+    font-size: 13px; font-weight: 600; color: var(--text);
+  }
+  .editor-ex-meta {
+    font-size: 11px; color: var(--text3); margin-top: 2px;
+  }
+  .editor-ex-del {
+    background: none; border: none;
+    color: var(--text3); font-size: 14px; cursor: pointer;
+    padding: 4px 6px; border-radius: 4px; transition: 0.15s;
+  }
+  .editor-ex-del:active { color: var(--red); background: rgba(194,59,59,0.1); }
+  .editor-ex-empty {
+    text-align: center; padding: 20px;
+    font-size: 12px; color: var(--text3);
+    font-family: 'Cinzel', serif; letter-spacing: 0.05em;
+  }
+
+  /* Boutons ajout exercice */
+  .editor-add-ex-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+  .editor-add-ex-btn {
+    width: 100%; padding: 12px;
+    background: rgba(194,59,59,0.07);
+    border: 1px dashed rgba(194,59,59,0.3);
+    border-radius: 4px; color: var(--red);
+    font-family: 'Cinzel', serif;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    cursor: pointer; transition: 0.15s;
+  }
+  .editor-add-ex-btn--secondary {
+    background: rgba(45,125,210,0.06);
+    border-color: rgba(45,125,210,0.25);
+    color: var(--blue);
+  }
+  .editor-add-ex-btn:active { opacity: 0.7; }
+
+  /* ── Picker bibliothèque ── */
+  .ex-picker-overlay {
+    position: fixed; inset: 0; z-index: 500;
+    background: rgba(0,0,0,0.7);
+    display: flex; align-items: flex-end;
+    animation: fadeIn 0.15s ease;
+  }
+  .ex-picker {
+    background: var(--card2);
+    border-radius: 16px 16px 0 0;
+    border-top: 2px solid rgba(194,59,59,0.4);
+    width: 100%; max-height: 65vh;
+    display: flex; flex-direction: column;
+    animation: slideUp 0.25s cubic-bezier(.34,1.56,.64,1);
+  }
+  .ex-picker-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px; border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .ex-picker-title {
+    font-family: 'Cinzel', serif;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: #EDEDF0;
+  }
+  .ex-picker-close {
+    background: none; border: none; color: var(--text3);
+    font-size: 16px; cursor: pointer; padding: 4px;
+  }
+  .ex-picker-list {
+    overflow-y: auto; padding: 8px 0;
+    -webkit-overflow-scrolling: touch;
+  }
+  .ex-picker-group {
+    font-family: 'Cinzel', serif;
+    font-size: 8px; font-weight: 700;
+    color: rgba(194,59,59,0.6);
+    letter-spacing: 0.2em; text-transform: uppercase;
+    padding: 8px 16px 4px;
+  }
+  .ex-picker-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; cursor: pointer;
+    transition: background 0.1s;
+  }
+  .ex-picker-item:active { background: rgba(194,59,59,0.08); }
+  .ex-picker-item-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .ex-picker-item-meta { font-size: 10px; color: var(--text3); margin-top: 2px; }
+  .ex-picker-item-add {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: rgba(194,59,59,0.15); color: var(--red);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700; flex-shrink: 0;
+  }
+
+  /* ── Formulaire exercice custom ── */
+  .custom-ex-form {
+    background: var(--card); border: 1px solid rgba(45,125,210,0.3);
+    border-radius: 8px; padding: 14px;
+    margin-top: 10px;
+    animation: setsSlide 0.2s ease;
+  }
+  .editor-check-label {
+    display: flex; align-items: center; gap: 6px;
+    font-family: 'Cinzel', serif;
+    font-size: 9px; font-weight: 700;
+    color: var(--text3); letter-spacing: 0.08em;
+    text-transform: uppercase; cursor: pointer;
+    padding: 6px 10px;
+    background: var(--bg); border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+  .editor-check-label input { accent-color: var(--red); }
+
+
+  /* ── Danger button (delete) ── */
+  .btn-danger {
+    width: 100%; padding: 13px;
+    border: 1px solid rgba(194,59,59,0.35);
+    border-radius: 4px;
+    background: rgba(194,59,59,0.06);
+    color: var(--red);
+    font-family: 'Cinzel', serif;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .btn-danger:active {
+    background: rgba(194,59,59,0.18);
+    border-color: rgba(194,59,59,0.7);
+  }
+
+  /* ── Swipe hint ── */
+  .hist-hint {
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    color: var(--text3);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-align: center;
+    margin: -6px 0 12px;
+    opacity: 0.5;
+  }
+
+  /* ── Configurateur d'exercice ── */
+  .ex-config-panel {
+    background: var(--card);
+    border: 1px solid rgba(194,59,59,0.25);
+    border-top: 2px solid rgba(194,59,59,0.5);
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 10px;
+    animation: setsSlide 0.2s ease;
+  }
+  .ex-config-name {
+    font-family: 'Cinzel', serif;
+    font-size: 13px; font-weight: 700;
+    color: #EDEDF0; letter-spacing: 0.04em;
+    margin-bottom: 3px;
+  }
+  .ex-config-preview {
+    font-size: 11px; color: var(--red);
+    font-family: 'Cinzel', serif;
+    letter-spacing: 0.06em;
+    margin-bottom: 2px;
+    min-height: 16px;
+  }
+
+  /* Type buttons */
+  .ex-config-types {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7px;
+    margin-top: 6px;
+  }
+  .ex-config-type-btn {
+    padding: 10px 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    text-align: left;
+    cursor: pointer;
+    transition: 0.15s;
+  }
+  .ex-config-type-btn.active {
+    background: rgba(194,59,59,0.1);
+    border-color: rgba(194,59,59,0.5);
+  }
+  .ex-config-type-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px; font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .ex-config-type-btn.active .ex-config-type-label { color: var(--red); }
+  .ex-config-type-desc {
+    font-size: 9px; color: var(--text3);
+    margin-top: 2px;
+  }
+
+  /* Sets counter */
+  .ex-config-sets-row {
+    display: flex; align-items: center; gap: 0;
+    margin-top: 6px; width: fit-content;
+  }
+  .ex-config-sets-btn {
+    width: 38px; height: 38px;
+    background: var(--bg); border: 1px solid var(--border);
+    color: var(--text); font-size: 20px; font-weight: 300;
+    cursor: pointer; transition: 0.15s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ex-config-sets-btn:first-child { border-radius: 4px 0 0 4px; }
+  .ex-config-sets-btn:last-child  { border-radius: 0 4px 4px 0; }
+  .ex-config-sets-btn:active { background: rgba(194,59,59,0.1); border-color: rgba(194,59,59,0.4); }
+  .ex-config-sets-val {
+    width: 50px; height: 38px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cinzel', serif;
+    font-size: 18px; font-weight: 700; color: var(--red);
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Rep presets */
+  .ex-config-rep-presets {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-top: 6px;
+  }
+  .ex-config-rep-btn {
+    padding: 7px 12px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 4px; color: var(--text3);
+    font-family: 'Cinzel', serif;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer; transition: 0.15s;
+  }
+  .ex-config-rep-btn.active {
+    background: rgba(194,59,59,0.1);
+    border-color: rgba(194,59,59,0.5);
+    color: var(--red);
+  }
+  .ex-config-custom-input {
+    margin-top: 8px;
+    font-size: 13px;
+  }
+
+
+  /* ── Page Progrès — stats globales ── */
+  .prog-stats-grid {
+    display: flex; align-items: stretch;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .prog-stat-cell {
+    flex: 1; padding: 14px 10px; text-align: center;
+  }
+  .prog-stat-val {
+    font-family: 'Cinzel', serif;
+    font-size: 26px; font-weight: 700; line-height: 1;
+    margin-bottom: 4px;
+  }
+  .prog-stat-label {
+    font-family: 'Cinzel', serif;
+    font-size: 7px; font-weight: 700;
+    color: var(--text3); letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  .prog-stat-sep {
+    width: 1px;
+    background: var(--border);
+    flex-shrink: 0;
+    margin: 10px 0;
+  }
+
+  /* ── Top lifts ── */
+  .prog-top-lifts { display: flex; flex-direction: column; gap: 6px; }
+  .prog-top-lift-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 6px; padding: 12px 14px;
+  }
+  .prog-top-lift-name {
+    font-family: 'Cinzel', serif;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .prog-top-lift-row {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    gap: 8px;
+  }
+  .prog-top-lift-val {
+    font-family: 'Cinzel', serif;
+    font-size: 20px; font-weight: 700;
+    color: var(--text); line-height: 1;
+  }
+  .prog-top-lift-rm {
+    font-family: 'Cinzel', serif;
+    font-size: 16px; font-weight: 700;
+    color: var(--cyan); line-height: 1;
+  }
+  .prog-top-lift-sub {
+    font-size: 9px; color: var(--text3);
+    letter-spacing: 0.05em; margin-top: 3px;
+  }
+
+
+  /* ── Estimation durée séance sur carte programme ── */
+  .prog-est-time {
+    font-family: 'Cinzel', serif;
+    font-size: 9px; font-weight: 700;
+    color: var(--text3);
+    letter-spacing: 0.1em; text-transform: uppercase;
+    margin-top: 8px; padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── Strip d'actions inline (swipe programmes) ── */
+  .prog-action-strip {
+    display: flex; gap: 8px;
+    padding: 8px 0 4px;
+    animation: setsSlide 0.2s ease;
+  }
+  .prog-action-btn {
+    flex: 1; padding: 11px 8px;
+    border-radius: 4px;
+    font-family: 'Cinzel', serif;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    cursor: pointer; transition: 0.15s;
+    border: none;
+  }
+  .prog-action-edit {
+    background: rgba(45,125,210,0.1);
+    color: var(--blue);
+    border: 1px solid rgba(45,125,210,0.3);
+  }
+  .prog-action-edit:active { background: rgba(45,125,210,0.2); }
+  .prog-action-del {
+    background: rgba(194,59,59,0.1);
+    color: var(--red);
+    border: 1px solid rgba(194,59,59,0.3);
+  }
+  .prog-action-del:active { background: rgba(194,59,59,0.2); }
+
