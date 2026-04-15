@@ -149,74 +149,125 @@ function renderExerciseDetail(ex, accent) {
 function renderProgress() {
   let html = '<h2 class="page-title">Progrès</h2>';
 
-  const streak      = computeStreak();
-  const streakColor = streak >= 8 ? 'var(--red)' : streak >= 4 ? 'var(--yellow)' : 'var(--purple)';
-  const flames      = streak >= 8 ? '🔥🔥🔥' : streak >= 4 ? '🔥🔥' : streak >= 2 ? '🔥' : '⬜';
-  html += `<div class="card" style="margin-bottom:14px;display:flex;align-items:center;gap:14px">
-    <div style="font-size:40px;font-weight:800;color:${streakColor};line-height:1">${streak}</div>
-    <div>
-      <div style="font-size:13px;font-weight:700;color:var(--text)">${flames} Semaine${streak!==1?'s':''} de streak</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:2px">${streak===0?'Commence ta première séance !':streak===1?'Premier pas, continue !':'Belle régularité, continue !'}</div>
+  // ── Statistiques globales en haut ──────────────────────────────────────────
+  const streak    = computeStreak();
+  const totalSess = state.history.length;
+  let   totalVol  = 0;
+  state.history.forEach(h => {
+    Object.values(h.sets).forEach(s => {
+      totalVol += (parseFloat(s.kg)||0) * (parseInt(s.reps)||0);
+    });
+  });
+  const volStr = totalVol >= 1000000
+    ? (totalVol/1000000).toFixed(1) + 't'
+    : totalVol >= 1000
+    ? (totalVol/1000).toFixed(0) + 'k'
+    : totalVol.toFixed(0);
+
+  html += `<div class="prog-stats-grid">
+    <div class="prog-stat-cell">
+      <div class="prog-stat-val" style="color:var(--red)">${streak}</div>
+      <div class="prog-stat-label">Semaines</div>
+    </div>
+    <div class="prog-stat-sep"></div>
+    <div class="prog-stat-cell">
+      <div class="prog-stat-val" style="color:var(--text)">${totalSess}</div>
+      <div class="prog-stat-label">Séances</div>
+    </div>
+    <div class="prog-stat-sep"></div>
+    <div class="prog-stat-cell">
+      <div class="prog-stat-val" style="color:var(--yellow)">${volStr}</div>
+      <div class="prog-stat-label">Volume kg</div>
     </div>
   </div>`;
 
+  // ── Activité ──────────────────────────────────────────────────────────────
+  html += '<div class="warrior-section">Activité</div>';
   html += renderHeatmap();
 
-  // Big 3 résumé
-  const big3 = [
-    { exId:'a1', label:'Bench', accent:'#C23B3B', sets:3 },
-    { exId:'b1', label:'OHP',   accent:'#2D7DD2', sets:4 },
-    { exId:'a2', label:'Row',   accent:'#A78BFA', sets:3 },
-  ];
-  html += '<div style="display:flex;gap:6px;margin:16px 0 20px">';
-  big3.forEach(lift => {
-    const hist  = getExerciseHistory(lift.exId, lift.sets);
-    const last  = hist.length ? hist[hist.length-1] : null;
-    const bestRM = hist.length ? Math.max(...hist.map(h => h.best1RM)) : 0;
-    html += `<div class="card" style="flex:1;text-align:center;padding:10px 6px;border-top:3px solid ${lift.accent}">
-      <div style="font-size:11px;font-weight:700;color:${lift.accent};margin-bottom:6px">${lift.label}</div>
-      ${last
-        ? `<div style="font-size:18px;font-weight:800;color:var(--text);line-height:1">${last.bestKg}×${last.bestReps}</div>
-           <div style="font-size:10px;color:var(--text3);margin-top:4px">1RM: <strong style="color:var(--cyan)">${bestRM.toFixed(0)}kg</strong></div>`
-        : '<div style="font-size:12px;color:var(--text3)">—</div>'}
-    </div>`;
-  });
-  html += '</div>';
+  // ── Top lifts ─────────────────────────────────────────────────────────────
+  html += '<div class="warrior-section" style="margin-top:20px">Top lifts</div>';
+  const prog = getActiveProgram();
+  const topExos = prog.flatMap(d => d.exercises.filter(e => e.topSet).map(e => ({...e, accent: d.accent})));
 
-  html += '<h2 class="page-title" style="margin-top:20px">Détail par séance</h2>';
-  PROGRAM.forEach(d => {
+  if (topExos.length) {
+    html += '<div class="prog-top-lifts">';
+    topExos.forEach(ex => {
+      const hist  = getExerciseHistory(ex.id, ex.sets);
+      const last  = hist.length ? hist[hist.length-1] : null;
+      const bestRM = hist.length ? Math.max(...hist.map(h => h.best1RM)) : 0;
+      const trend  = hist.length >= 2
+        ? hist[hist.length-1].best1RM - hist[hist.length-2].best1RM
+        : 0;
+      const trendColor = trend > 0 ? 'var(--green)' : trend < 0 ? 'var(--red)' : 'var(--text3)';
+      const trendStr   = trend > 0 ? `+${trend.toFixed(1)}` : trend < 0 ? trend.toFixed(1) : '—';
+
+      html += `<div class="prog-top-lift-card" style="border-left:3px solid ${ex.accent}">
+        <div class="prog-top-lift-name" style="color:${ex.accent}">${ex.name.split(' ').slice(0,3).join(' ')}</div>
+        <div class="prog-top-lift-row">
+          <div>
+            <div class="prog-top-lift-val">${last ? last.bestKg + '<span style="font-size:10px">kg×' + last.bestReps + '</span>' : '—'}</div>
+            <div class="prog-top-lift-sub">Dernière séance</div>
+          </div>
+          <div style="text-align:right">
+            <div class="prog-top-lift-rm">${bestRM > 0 ? bestRM.toFixed(0) + 'kg' : '—'}</div>
+            <div class="prog-top-lift-sub">1RM max</div>
+          </div>
+          <div style="text-align:right;min-width:36px">
+            <div style="font-size:13px;font-weight:700;color:${trendColor}">${trendStr}</div>
+            <div class="prog-top-lift-sub">Tendance</div>
+          </div>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  // ── Détail par jour ────────────────────────────────────────────────────────
+  html += '<div class="warrior-section" style="margin-top:20px">Détail par exercice</div>';
+  prog.forEach(d => {
     const isOpen = progressOpenDay === d.id;
     const count  = state.history.filter(h => h.dayId === d.id).length;
-    html += `<div class="card" style="margin-bottom:8px;cursor:pointer;border-left:3px solid ${d.accent}" onclick="toggleProgressDay('${d.id}')">
+    html += `<div class="card" style="margin-bottom:6px;cursor:pointer;border-left:3px solid ${d.accent}" onclick="toggleProgressDay('${d.id}')">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div>
-          <div style="font-size:14px;font-weight:700;color:${d.accent}">${d.name} — ${d.subtitle}</div>
-          <div style="font-size:11px;color:var(--text3);margin-top:2px">${count} séances · ${d.exercises.length} exercices</div>
+          <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:${d.accent};letter-spacing:0.06em;text-transform:uppercase">${d.name}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px">${count} séance${count!==1?'s':''} · ${d.exercises.length} exercices</div>
         </div>
-        <div style="font-size:18px;color:${isOpen?d.accent:'var(--text3)'};transition:0.15s">${isOpen?'▾':'▸'}</div>
+        <div style="font-size:16px;color:${isOpen?d.accent:'var(--text3)'};transition:0.15s">${isOpen?'▾':'▸'}</div>
       </div>
     </div>`;
     if (isOpen) {
       d.exercises.forEach(ex => {
-        html += `<div class="card" style="margin-bottom:8px;margin-left:8px;border-left:2px solid ${d.accent}30;animation:setsSlide 0.25s ease">`;
+        html += `<div class="card" style="margin-bottom:6px;margin-left:8px;border-left:2px solid ${d.accent}35;animation:setsSlide 0.25s ease">`;
         html += renderExerciseDetail(ex, d.accent);
         html += '</div>';
       });
     }
   });
 
-  // Stats vélo
+  // ── Vélo ───────────────────────────────────────────────────────────────────
   if (state.veloSessions && state.veloSessions.length) {
-    const totalKm  = state.veloSessions.reduce((a, v) => a + (v.distance||0), 0);
-    const totalMin = state.veloSessions.reduce((a, v) => a + (v.duration||0), 0);
+    const totalKm  = state.veloSessions.reduce((a, v) => a+(v.distance||0), 0);
+    const totalMin = state.veloSessions.reduce((a, v) => a+(v.duration||0), 0);
     const totalH   = Math.floor(totalMin/60);
     const remMin   = totalMin % 60;
-    html += `<div class="card" style="margin-bottom:6px;border-left:3px solid var(--yellow);margin-top:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <span style="font-size:13px;font-weight:600;color:var(--yellow)">🚴 Vélo</span>
-        <span style="font-size:20px;font-weight:800;color:var(--yellow)">${state.veloSessions.length}</span>
+    html += `<div class="warrior-section" style="margin-top:16px">Vélo</div>
+    <div class="prog-top-lift-card" style="border-left:3px solid var(--yellow)">
+      <div class="prog-top-lift-row">
+        <div>
+          <div class="prog-top-lift-val" style="color:var(--yellow)">${state.veloSessions.length}</div>
+          <div class="prog-top-lift-sub">Sorties</div>
+        </div>
+        <div>
+          <div class="prog-top-lift-val">${totalKm.toFixed(0)}<span style="font-size:10px">km</span></div>
+          <div class="prog-top-lift-sub">Distance</div>
+        </div>
+        <div>
+          <div class="prog-top-lift-val">${totalH}<span style="font-size:10px">h${remMin>0?remMin+'m':''}</span></div>
+          <div class="prog-top-lift-sub">Durée</div>
+        </div>
       </div>
-      <div style="font-size:11px;color:var(--text3)">sorties · ${totalKm.toFixed(0)} km · ${totalH}h${remMin>0?remMin+'min':''}</div>
     </div>`;
   }
 

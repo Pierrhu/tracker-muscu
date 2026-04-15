@@ -10,7 +10,8 @@ function exportToExcel() {
   // Feuille 1 : Séances
   const rows1 = [['Date','Jour','Programme','Exercice','Série','Charge (kg)','Répétitions','1RM estimé (kg)']];
   state.history.forEach(h => {
-    const d = PROGRAM.find(p => p.id === h.dayId);
+    const found = findDayInfo(h.dayId);
+    const d = found ? found.day : null;
     if (!d) return;
     const dateStr = new Date(h.date).toLocaleDateString('fr-FR');
     d.exercises.forEach(ex => {
@@ -29,7 +30,7 @@ function exportToExcel() {
   XLSX.utils.book_append_sheet(wb, ws1, 'Séances');
 
   // Feuille 2 : Top Sets
-  const topExercises = PROGRAM.flatMap(d => d.exercises.filter(e => e.topSet).map(e => ({...e, dayName:d.name})));
+  const topExercises = getActiveProgram().flatMap(d => d.exercises.filter(e => e.topSet).map(e => ({...e, dayName:d.name})));
   const rows2 = [['Exercice','Jour','Date','Charge (kg)','Répétitions','1RM estimé (kg)']];
   topExercises.forEach(ex => {
     state.history.forEach(h => {
@@ -111,7 +112,14 @@ function processImportFile(file) {
         const reps     = row['Répétitions'];
         if (!dateRaw || !jourName || !exName || (!kg && !reps)) return;
 
-        const day = PROGRAM.find(d => d.name.toLowerCase() === jourName.toLowerCase());
+        // Chercher dans tous les programmes disponibles
+        let day = PROGRAM.find(d => d.name.toLowerCase() === jourName.toLowerCase());
+        if (!day) {
+          for (const prog of (state.customPrograms || [])) {
+            day = prog.days.find(d => d.name.toLowerCase() === jourName.toLowerCase());
+            if (day) break;
+          }
+        }
         if (!day) return;
         const ex = day.exercises.find(e => e.name.toLowerCase() === exName.toLowerCase());
         if (!ex) return;

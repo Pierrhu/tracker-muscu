@@ -67,7 +67,7 @@ function launchConfetti() {
 
 // ── Modal info exercice (panneau swipe) ───────────────────────────────────────
 function findExercise(exId) {
-  for (const day of PROGRAM) {
+  for (const day of getActiveProgram()) {
     for (const ex of day.exercises) {
       if (ex.id === exId) return { ex, day };
     }
@@ -179,7 +179,7 @@ function checkWeeklyRecap() {
   let prCount    = 0;
   weekSessions.forEach(h => {
     const idx = state.history.indexOf(h);
-    const day = PROGRAM.find(d => d.id === h.dayId);
+    const found2 = findDayInfo(h.dayId); const day = found2 ? found2.day : null;
     if (day && idx > 0) prCount += detectPRs(h, day).length;
   });
 

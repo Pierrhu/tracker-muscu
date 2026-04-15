@@ -1,7 +1,7 @@
 // ============ SÉANCE ============
 
 function renderWorkout() {
-  const day = PROGRAM[state.dayIdx];
+  const day = getActiveProgram()[state.dayIdx];
   let html = '<h2 class="page-title">Séance</h2>';
 
   // Streak banner
@@ -30,7 +30,7 @@ function renderWorkout() {
 
   // Sélecteur de jour
   html += '<div class="day-sel">';
-  PROGRAM.forEach((d, i) => {
+  getActiveProgram().forEach((d, i) => {
     const active = state.dayIdx === i;
     html += `<button class="day-btn${active?' active':''}" style="--active-color:${d.accent}15;--active-accent:${d.accent}" onclick="selectDay(${i})">
       <div class="day-name">${d.name}</div><div class="day-when">${d.when}</div>
@@ -56,7 +56,7 @@ function renderWorkout() {
       <div class="ex-header">
         <div style="flex:1">${tagHtml}
           <div class="ex-name">${ex.name}</div>
-          <div class="ex-format">${ex.format}</div>
+          <div class="ex-format">${ex.format}${ex.restTime ? ' <span style="color:var(--text3);font-size:10px">· Repos ' + (ex.restTime >= 60 ? Math.floor(ex.restTime/60) + 'min' : ex.restTime + 's') + '</span>' : ''}</div>
           ${lastPerf ? `<div class="ex-prev" style="text-align:left;margin-top:3px">Préc: <strong style="color:${day.accent}">${lastPerf.kg}kg×${lastPerf.reps}</strong></div>` : ''}
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
@@ -160,7 +160,7 @@ function renderWorkout() {
   });
 }
 
-function selectDay(i)  { state.dayIdx = i; state.activeEx = null; state._lastPRs = null; render(); }
+function selectDay(i)  { state.dayIdx = i; state.activeEx = null; state._lastPRs = null; state._lastTimerSet = null; render(); }
 function toggleEx(id)  { state.activeEx = state.activeEx === id ? null : id; render(); }
 function updateSet(key, val) { state.current[key] = val; saveState(); }
 
@@ -171,7 +171,12 @@ function onSetInput(exId, setIdx, kgKey, repsKey, isTopSet, rankKey) {
   const kg   = state.current[kgKey];
   const reps = state.current[repsKey];
   if (kg && reps && parseFloat(kg) > 0 && parseInt(reps) > 0) {
-    startRestTimer(getRestDuration(exId));
+    // Ne pas relancer le timer si déjà actif (évite reset à chaque frappe)
+    const setKey = `${exId}_${setIdx}`;
+    if (!state._lastTimerSet || state._lastTimerSet !== setKey) {
+      state._lastTimerSet = setKey;
+      startRestTimer(getRestDuration(exId));
+    }
     document.querySelectorAll(`input[oninput*="'${kgKey}'"], input[oninput*="'${repsKey}'"]`).forEach(inp => {
       inp.classList.remove('input-flash');
       void inp.offsetWidth;
@@ -200,7 +205,7 @@ function onSetInput(exId, setIdx, kgKey, repsKey, isTopSet, rankKey) {
     if (topKg > 0) {
       const sugKg   = (Math.round((topKg * 0.85) / 2.5) * 2.5).toFixed(1).replace('.0','');
       const sugReps = topReps > 0 ? Math.min(topReps + 2, 8) : '';
-      for (const day of PROGRAM) {
+      for (const day of getActiveProgram()) {
         for (const ex of day.exercises) {
           if (ex.id !== exId) continue;
           for (let s = 1; s < ex.sets; s++) {
@@ -226,7 +231,7 @@ function onSetInput(exId, setIdx, kgKey, repsKey, isTopSet, rankKey) {
 
 // ── Terminer la séance ────────────────────────────────────────────────────────
 function finishSession(dayId) {
-  const day   = PROGRAM.find(d => d.id === dayId);
+  const day   = getActiveProgram().find(d => d.id === dayId);
   const entry = { dayId, date: new Date().toISOString(), sets: {} };
   let hasData = false;
 
@@ -255,6 +260,7 @@ function finishSession(dayId) {
 
   state.history.push(entry);
   state.activeEx = null;
+  state._lastTimerSet = null;
 
   const prs = detectPRs(entry, day);
   if (prs.length) state._lastPRs = prs;

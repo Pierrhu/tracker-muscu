@@ -27,7 +27,8 @@ function getProgressInRank(ratio, thresholds, rankIdx) {
 function getBest1RM(rankKey) {
   let best = 0;
   state.history.forEach(h => {
-    const day = PROGRAM.find(d => d.id === h.dayId);
+    const found = findDayInfo(h.dayId);
+    const day = found ? found.day : null;
     if (!day) return;
     day.exercises.forEach(ex => {
       if (ex.rankKey !== rankKey) return;
@@ -151,8 +152,17 @@ function formatDate(iso) {
 
 function showToast(msg, type) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className   = 'toast' + (type ? ' ' + type : '');
+
+  // Icône selon le type
+  const icons = { pr: '🏆', err: '⚠' };
+  const labels = { pr: 'Record', err: 'Attention' };
+  const iconText = labels[type] || 'Info';
+
+  t.className = 'toast' + (type ? ' ' + type : '');
+  t.innerHTML = `<span class="toast-icon">${iconText}</span><div class="toast-sep"></div><span class="toast-msg">${msg}</span>`;
+
+  // Clear tout timer précédent
+  if (t._timer) clearTimeout(t._timer);
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2600);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2800);
 }

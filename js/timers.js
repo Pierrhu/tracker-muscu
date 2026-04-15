@@ -6,15 +6,19 @@ let restTimerEnd      = 0;
 let restTimerDuration = 0;
 
 function getRestDuration(exId) {
-  for (const day of PROGRAM) {
+  // Chercher dans le programme actif (inclut les programmes custom)
+  for (const day of getActiveProgram()) {
     for (const ex of day.exercises) {
       if (ex.id !== exId) continue;
+      // Priorité : restTime défini sur l'exercice
+      if (ex.restTime) return ex.restTime;
+      // Fallback : déduire du type
       if (ex.topSet)   return 180;
       if (ex.superset) return 90;
       if (ex.dropSet)  return 90;
-      const f = ex.format;
-      if (f.includes('6-8') || f.includes('6-10'))   return 150;
-      if (f.includes('8-10') || f.includes('10-12'))  return 120;
+      const f = ex.format || '';
+      if (f.includes('6-8') || f.includes('6-10'))  return 150;
+      if (f.includes('8-10') || f.includes('10-12')) return 120;
       return 90;
     }
   }
@@ -30,7 +34,7 @@ function startRestTimer(duration) {
   const timeEl  = document.getElementById('rest-timer-time');
   const fillEl  = document.getElementById('rest-timer-fill');
   const labelEl = document.getElementById('rest-timer-label');
-  const day     = PROGRAM[state.dayIdx];
+  const day     = getActiveProgram()[state.dayIdx];
 
   el.classList.add('active');
   fillEl.style.background = day ? day.accent : 'var(--blue)';

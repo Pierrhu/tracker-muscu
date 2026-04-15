@@ -7,7 +7,7 @@ let editSets       = {};
 function renderHistory() {
   let html = '<h2 class="page-title">Historique</h2>'
            + '<div class="warrior-section">Campagnes passées</div>'
-           + '<div class="hist-hint">Maintenir pour modifier</div>';
+           + '<div class="hist-hint">← Glisser pour modifier</div>';
 
   const allEntries = [];
   state.history.forEach    ((h, i) => allEntries.push({ type:'muscu', data:h, idx:i }));
@@ -28,8 +28,9 @@ function renderHistory() {
     allEntries.forEach(entry => {
       if (entry.type === 'muscu') {
         const h = entry.data, i = entry.idx;
-        const d = PROGRAM.find(p => p.id === h.dayId);
-        if (!d) return;
+        const found = findDayInfo(h.dayId);
+        if (!found) return;
+        const d = found.day;
         const setCount = Object.keys(h.sets).length;
         html += `<div class="hist-card hist-card--warrior" style="--hc-accent:${d.accent}" data-hist-action="openEditSession(${i})">
           <div class="hist-card-header">
@@ -103,42 +104,56 @@ function renderHistory() {
 function initHistSwipe() {
   document.querySelectorAll('[data-hist-action]').forEach(card => {
     const action = card.getAttribute('data-hist-action');
-    let pressTimer = null, startY = 0, cancelled = false;
+    let startX = 0, startY = 0, tracking = false, fired = false;
 
     card.addEventListener('touchstart', e => {
-      startY    = e.touches[0].clientY;
-      cancelled = false;
-      card.style.transition = 'transform 0.5s ease, opacity 0.5s ease';
-      pressTimer = setTimeout(() => {
-        if (!cancelled) {
-          card.style.transform = 'scale(0.97)';
-          card.style.opacity   = '0.75';
-          setTimeout(() => {
-            card.style.transform = '';
-            card.style.opacity   = '';
-            eval(action);
-          }, 120);
-        }
-      }, 500);
-    }, { passive:true });
+      startX   = e.touches[0].clientX;
+      startY   = e.touches[0].clientY;
+      tracking = true;
+      fired    = false;
+      card.style.transition = '';
+    }, { passive: true });
 
     card.addEventListener('touchmove', e => {
-      if (Math.abs(e.touches[0].clientY - startY) > 12) {
-        cancelled = true;
-        clearTimeout(pressTimer);
-        card.style.transform = ''; card.style.opacity = '';
+      if (!tracking || fired) return;
+      const dx = e.touches[0].clientX - startX;
+      const dy = Math.abs(e.touches[0].clientY - startY);
+
+      // Annuler si scroll vertical
+      if (dy > Math.abs(dx) * 0.8 && dy > 8) { tracking = false; return; }
+
+      // Suivre le doigt visuellement
+      if (dx < 0) {
+        card.style.transform = `translateX(${Math.max(dx * 0.4, -40)}px)`;
       }
-    }, { passive:true });
 
-    const cancel = () => { cancelled = true; clearTimeout(pressTimer); card.style.transform = ''; card.style.opacity = ''; };
-    card.addEventListener('touchend',    cancel, { passive:true });
-    card.addEventListener('touchcancel', cancel, { passive:true });
+      // Seuil atteint
+      if (dx < -55) {
+        fired    = true;
+        tracking = false;
+        card.style.transition = 'transform 0.2s cubic-bezier(0.4,0,0.2,1), opacity 0.2s';
+        card.style.transform  = 'translateX(-12px)';
+        card.style.opacity    = '0.7';
+        setTimeout(() => {
+          card.style.transform = '';
+          card.style.opacity   = '';
+          card.style.transition = '';
+          eval(action);
+        }, 180);
+      }
+    }, { passive: true });
 
-    // Desktop
-    let mouseTimer = null;
-    card.addEventListener('mousedown',   () => { mouseTimer = setTimeout(() => eval(action), 500); });
-    card.addEventListener('mouseup',     () => clearTimeout(mouseTimer));
-    card.addEventListener('mouseleave',  () => clearTimeout(mouseTimer));
+    const reset = () => {
+      if (fired) return;
+      tracking = false;
+      card.style.transition = 'transform 0.25s ease';
+      card.style.transform  = '';
+      card.style.opacity    = '';
+    };
+    card.addEventListener('touchend',    reset, { passive: true });
+    card.addEventListener('touchcancel', reset, { passive: true });
+
+    // Desktop : clic droit
     card.addEventListener('contextmenu', e => { e.preventDefault(); eval(action); });
   });
 }
@@ -147,8 +162,9 @@ function initHistSwipe() {
 function openEditSession(idx) {
   editingIdx = idx;
   const h = state.history[idx];
-  const d = PROGRAM.find(p => p.id === h.dayId);
-  if (!d) return;
+  const found = findDayInfo(h.dayId);
+  if (!found) return;
+  const d = found.day;
   editSets = JSON.parse(JSON.stringify(h.sets));
 
   document.getElementById('edit-modal-title').textContent = `Modifier — ${d.name} · ${formatDate(h.date)}`;
@@ -178,8 +194,8 @@ function openEditSession(idx) {
   document.getElementById('edit-modal-body').innerHTML = body;
   document.getElementById('edit-modal-save').setAttribute('onclick', 'saveEditSession()');
   const delBtn = document.getElementById('edit-modal-delete');
-  delBtn.style.display = 'block';
   delBtn.setAttribute('onclick', `deleteSession(${idx})`);
+  delBtn.style.display = 'block';
   document.getElementById('edit-modal').classList.remove('hidden');
 }
 
@@ -227,8 +243,8 @@ function openEditVelo(idx) {
     </div>`;
   document.getElementById('edit-modal-save').setAttribute('onclick', `saveEditVelo(${idx})`);
   const delBtn = document.getElementById('edit-modal-delete');
-  delBtn.style.display = 'block';
   delBtn.setAttribute('onclick', `deleteVeloSession(${idx})`);
+  delBtn.style.display = 'block';
   document.getElementById('edit-modal').classList.remove('hidden');
 }
 
@@ -261,8 +277,8 @@ function openEditBodyStat(idx) {
     </div>`;
   document.getElementById('edit-modal-save').setAttribute('onclick', 'saveEditBodyStat()');
   const delBtn = document.getElementById('edit-modal-delete');
-  delBtn.style.display = 'block';
   delBtn.setAttribute('onclick', `deleteBodyStat(${idx})`);
+  delBtn.style.display = 'block';
   document.getElementById('edit-modal').classList.remove('hidden');
 }
 

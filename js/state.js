@@ -10,6 +10,8 @@ let state = {
   veloSessions: [],
   activeEx: null,
   view: 'workout',
+  activeProgramId: 'default',
+  customPrograms: [],
 };
 
 // ── IndexedDB ────────────────────────────────────────────────────────────────
@@ -75,16 +77,20 @@ async function loadState() {
   if (!state.current)      state.current      = {};
   if (!state.history)      state.history      = [];
   if (!state.bodyStats)    state.bodyStats    = [];
-  if (!state.veloSessions) state.veloSessions = [];
+  if (!state.veloSessions)   state.veloSessions   = [];
+  if (!state.customPrograms) state.customPrograms = [];
+  if (!state.activeProgramId) state.activeProgramId = 'default';
 }
 
 function saveState() {
   const data = {
-    bodyWeight:   state.bodyWeight,
-    current:      state.current,
-    history:      state.history,
-    bodyStats:    state.bodyStats,
-    veloSessions: state.veloSessions,
+    bodyWeight:     state.bodyWeight,
+    current:        state.current,
+    history:        state.history,
+    bodyStats:      state.bodyStats,
+    veloSessions:   state.veloSessions,
+    activeProgramId: state.activeProgramId,
+    customPrograms:  state.customPrograms,
   };
   idbSet(STORAGE_KEY, data).catch(() => {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
