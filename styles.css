@@ -389,11 +389,15 @@
   .rank-card::before { background: var(--rc); }
 
   /* RANK IMAGES */
-  .rank-img { width: 24px; height: 24px; vertical-align: middle; }
-  .rank-badge .rank-img { width: 22px; height: 22px; }
-  .rank-card .rank-badge .rank-img { width: 28px; height: 28px; }
-  .overall-rank .rank-icon .rank-img { width: 96px; height: 96px; }
-  .live-1rm .rank-img { width: 16px; height: 16px; }
+  .rank-img {
+    width: 28px; height: 28px;
+    object-fit: contain; object-position: center;
+    vertical-align: middle; display: inline-block;
+  }
+  .rank-badge .rank-img { width: 26px; height: 26px; object-fit: contain; }
+  .rank-card .rank-badge .rank-img { width: 32px; height: 32px; object-fit: contain; }
+  .overall-rank .rank-icon .rank-img { width: 96px; height: 96px; object-fit: contain; }
+  .live-1rm .rank-img { width: 18px; height: 18px; object-fit: contain; }
 
   .overall-rank {
     text-align: center; padding: 24px 16px; margin-bottom: 16px;
@@ -821,17 +825,37 @@
 
   /* Weight input modal */
   .weight-banner {
-    background: linear-gradient(135deg, var(--yellow), #D4940F);
-    border-radius: 12px; padding: 14px 16px; margin-bottom: 14px;
-    display: flex; align-items: center; gap: 10px;
+    background: var(--card);
+    border: 1px solid rgba(228,162,41,0.2);
+    border-left: 3px solid rgba(228,162,41,0.6);
+    border-radius: 8px; padding: 12px 16px; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .weight-banner span:first-child {
+    font-family: 'Cinzel', serif !important;
+    font-size: 9px !important; font-weight: 700 !important;
+    color: var(--yellow) !important;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
   }
   .weight-banner input {
-    width: 80px; padding: 6px 8px; border: none; border-radius: 6px;
-    background: rgba(0,0,0,0.2); color: #fff; font-size: 16px; font-weight: 700;
-    text-align: center; outline: none; font-family: inherit;
+    width: 72px; padding: 6px 8px;
+    border: 1px solid var(--border); border-radius: 4px;
+    background: var(--bg); color: var(--text);
+    font-size: 15px; font-weight: 700;
+    font-family: 'Cinzel', serif;
+    text-align: center; outline: none;
     -webkit-appearance: none; -moz-appearance: textfield;
+    transition: border-color 0.15s;
   }
-  .weight-banner input::placeholder { color: rgba(255,255,255,0.5); }
+  .weight-banner input:focus { border-color: rgba(228,162,41,0.5); }
+  .weight-banner input::placeholder { color: var(--text3); }
+  .weight-banner span:last-child {
+    font-family: 'Cinzel', serif !important;
+    font-size: 10px !important; font-weight: 700 !important;
+    color: var(--text3) !important;
+    letter-spacing: 0.1em;
+  }
 
   /* ═══════════════════════════════════════
      VICTORY OVERLAY
