@@ -1,16 +1,16 @@
 // ============ RANGS & STANDARDS ============
 const RANKS = [
-  {name:'Bronze',   icon:'<img src="ranks/bronze.png" class="rank-img">',   cls:'rank-bronze'},
-  {name:'Argent',   icon:'<img src="ranks/argent.png" class="rank-img">',   cls:'rank-argent'},
-  {name:'Or',       icon:'<img src="ranks/or.png" class="rank-img">',       cls:'rank-or'},
-  {name:'Platine',  icon:'<img src="ranks/platine.png" class="rank-img">',  cls:'rank-platine'},
-  {name:'Diamant',  icon:'<img src="ranks/diamant.png" class="rank-img">',  cls:'rank-diamant'},
-  {name:'Écarlate', icon:'<img src="ranks/ecarlate.png" class="rank-img">', cls:'rank-ecarlate'},
-  {name:'Iridescent',icon:'<img src="ranks/iridescent.png" class="rank-img">',cls:'rank-iridescent'},
-  {name:'Top 250',  icon:'<img src="ranks/top250.png" class="rank-img">',   cls:'rank-top250'},
+  {name:'Novice',     icon:'<img src="ranks/bronze.png" class="rank-img">',      cls:'rank-bronze'},
+  {name:'Légionnaire',icon:'<img src="ranks/argent.png" class="rank-img">',      cls:'rank-argent'},
+  {name:'Centurion',  icon:'<img src="ranks/or.png" class="rank-img">',          cls:'rank-or'},
+  {name:'Gladiateur', icon:'<img src="ranks/platine.png" class="rank-img">',     cls:'rank-platine'},
+  {name:'Champion',   icon:'<img src="ranks/diamant.png" class="rank-img">',     cls:'rank-diamant'},
+  {name:'Imperator',  icon:'<img src="ranks/ecarlate.png" class="rank-img">',   cls:'rank-ecarlate'},
+  {name:'Dieu',       icon:'<img src="ranks/iridescent.png" class="rank-img">', cls:'rank-iridescent'},
+  {name:'Invictus',   icon:'<img src="ranks/top250.png" class="rank-img">',      cls:'rank-top250'},
 ];
 
-// Ratio thresholds 1RM/BW : [bronze, argent, or, platine, diamant, ecarlate, iridescent, top250]
+// Ratio thresholds 1RM/BW : [novice, légionnaire, centurion, gladiateur, champion, imperator, dieu, invictus]
 const STANDARDS = {
   bench: {
     name: 'Développé couché',
